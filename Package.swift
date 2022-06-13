@@ -24,6 +24,10 @@ let package = Package(
             resources: [
                 .copy("Templates")
             ]
+        ),
+        .testTarget(
+            name: "MobilityboxSDKTests",
+            dependencies: [.target(name: "MobilityboxSDK")]
         )
     ]
 )

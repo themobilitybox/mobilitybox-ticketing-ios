@@ -1,6 +1,6 @@
 import Foundation
 
-public indirect enum JSONValue: Codable {
+public indirect enum JSONValue: Decodable {
     case double(Double)
     case string(String)
     case bool(Bool)
@@ -31,7 +31,6 @@ public indirect enum JSONValue: Codable {
         }
         throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not find reasonable type to map to JSONValue"))
     }
-    
 }
 
 
@@ -82,6 +81,27 @@ extension JSONValue {
             return true
         default:
             return false
+        }
+    }
+}
+
+extension JSONValue: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        
+        switch self {
+        case .string(let value):
+            try? container.encode(value as String)
+        case .double(let value):
+            try? container.encode(value as Double)
+        case .bool(let value):
+            try? container.encode(value as Bool)
+        case .dictionary(let value):
+            try? container.encode(value as Dictionary)
+        case .array(let value):
+            try? container.encode(value as Array)
+        case .nil:
+            try? container.encodeNil()
         }
     }
 }
