@@ -1,6 +1,5 @@
 import Foundation
 
-@available(iOS 13.0, *)
 public struct MobilityboxCouponCode: Codable {
     public var couponCode: String
     
@@ -61,7 +60,6 @@ public struct MobilityboxCouponCode: Codable {
 }
 
 
-@available(iOS 13.0, *)
 public struct MobilityboxProduct: Codable, Identifiable {
     public var id: String
     public var local_ticket_name: String
@@ -74,8 +72,16 @@ public struct MobilityboxProduct: Codable, Identifiable {
     public var area_id: String
     public var identification_medium_schema: IdentificationMediumSchema
 }
-
-
+public struct MobilityboxOrderedProduct: Codable {
+    public var local_ticket_name: String
+    public var local_validity_description: String
+    public var ticket_type: String
+    public var customer_type: String
+    public var price_in_cents: Int
+    public var currency: String
+    public var validity_in_minutes: Int
+    public var area_id: String
+}
 
 struct IdentificationMediumProperty: Codable {
     var type: String
@@ -134,7 +140,6 @@ public struct MobilityboxPassenger: Codable {
     let identification_medium_json: String
 }
 
-@available(iOS 13.0, *)
 public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public static func == (lhs: MobilityboxCoupon, rhs: MobilityboxCoupon) -> Bool {
         return lhs.id == rhs.id
@@ -151,7 +156,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.activated = activated
     }
     
-    func activate(passenger: MobilityboxPassenger, completion: @escaping (MobilityboxTicket) -> ()) {
+    func activate(passenger: MobilityboxPassenger, completion: @escaping (MobilityboxTicketCode) -> ()) {
         let url = URL(string: "https://api-integration.themobilitybox.com/v2/ticketing/coupons/\(self.id)/activate.json")!
         let body = passenger.identification_medium_json
         var request = URLRequest(url: url)
@@ -177,7 +182,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                 
                 DispatchQueue.main.async {
                     let ticketId = couponActivateResponse!["ticket_id"] as! String
-                    let ticket = MobilityboxTicket(ticketId: ticketId, couponCode: self.id, product: self.product)
+                    let ticket = MobilityboxTicketCode(ticketId: ticketId, couponCode: self.id, product: self.product)
                     completion(ticket)
                 }
             }
@@ -187,25 +192,5 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     
     public func getCouponCode() -> String {
         return self.id
-    }
-}
-
-@available(iOS 13.0, *)
-public class MobilityboxTicket: Identifiable, Codable, Equatable {
-    public static func == (lhs: MobilityboxTicket, rhs: MobilityboxTicket) -> Bool {
-        lhs.ticketId == rhs.ticketId
-    }
-    
-    public let id: String
-    public let couponCode: String?
-    public let ticketId: String
-    public var ticketData: JSONValue?
-    public var product: MobilityboxProduct?
-    
-    public init(ticketId: String, couponCode: String, product: MobilityboxProduct) {
-        self.id = ticketId
-        self.ticketId = ticketId
-        self.couponCode = couponCode
-        self.product = product
     }
 }

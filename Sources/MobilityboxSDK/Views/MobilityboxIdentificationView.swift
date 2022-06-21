@@ -7,7 +7,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     @Binding var coupon: MobilityboxCoupon
     var presentationMode: Binding<PresentationMode>
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
-    var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicket) -> Void)
+    var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     
     func makeCoordinator() -> IdentificationFormWebView.Coordinator {
         Coordinator(self)
@@ -112,9 +112,9 @@ struct IdentificationFormWebView: UIViewRepresentable {
 public struct MobilityboxIdentificationView: View {
     @Binding var coupon: MobilityboxCoupon
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-    var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicket) -> Void)
+    var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     
-    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicket) -> Void)) {
+    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)) {
         self._coupon = coupon
         self.activateCouponCallback = activateCouponCallback
     }
