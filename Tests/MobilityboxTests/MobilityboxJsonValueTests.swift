@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import MobilityboxSDK
+@testable import Mobilitybox
 
 class MobilityboxJsonValueTests: XCTestCase {
     

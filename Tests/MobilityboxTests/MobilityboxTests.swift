@@ -1,5 +1,5 @@
 import XCTest
-@testable import MobilityboxSDK
+@testable import Mobilitybox
 
 final class MobilityboxSDKTests: XCTestCase {
     func testExample() throws {
