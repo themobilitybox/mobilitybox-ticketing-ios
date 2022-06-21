@@ -1,15 +1,16 @@
 import SwiftUI
 
 @available(iOS 14.0, macOS 11.0, *)
-struct TopCouponView: View {
-    @Binding var coupon: MobilityboxCoupon
+struct TopCardView: View {
+    var title: String
+    var description: String
     
     var body: some View {
         HStack {
             Spacer()
             VStack {
-                Text(coupon.product.local_ticket_name).font(Font.title3.bold())
-                Text(coupon.product.local_validity_description ).font(.system(size: 10))
+                Text(title).font(Font.title3.bold())
+                Text(description).font(.system(size: 10))
                     .padding(.vertical, 1)
                     .padding(.horizontal, 20)
             }
@@ -19,22 +20,22 @@ struct TopCouponView: View {
     }
 }
 
-
 @available(iOS 14.0, macOS 11.0, *)
-struct BottomCouponView<Content: View>: View {
-    @Binding var coupon: MobilityboxCoupon
-    @ViewBuilder var navigationLink: () -> Content
+struct BottomCardView<Content: View>: View {
+    var buttonView: () -> Content?
+    var navigationLink: () -> Content?
     
-    init(coupon: Binding<MobilityboxCoupon>, @ViewBuilder navigationLink: @escaping () -> Content) {
-        self._coupon = coupon
+    init(@ViewBuilder buttonView: @escaping () -> Content? = { nil }, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
+        self.buttonView = buttonView
         self.navigationLink = navigationLink
     }
+    
     
     var body: some View {
         HStack {
             Spacer()
             HStack(spacing: 0) {
-                MobilityboxButtonView(coupon: $coupon)
+                buttonView()
                 navigationLink()
                     .frame(width: 0)
                     .opacity(0)
@@ -45,8 +46,9 @@ struct BottomCouponView<Content: View>: View {
     }
 }
 
+
 @available(iOS 14.0, macOS 11.0, *)
-struct Seperator: Shape {
+struct CardSeperator: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.origin.x, y: rect.origin.y))
@@ -57,15 +59,15 @@ struct Seperator: Shape {
 }
 
 @available(iOS 14.0, macOS 11.0, *)
-struct ShadowStyleModifier: ViewModifier {
+struct CardShadowStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .shadow(color: Color.black.opacity(0.15), radius: 3, x: 2, y: 4)
+            .shadow(color: Color.black.opacity(0.25), radius: 5, x: 2, y: 2)
     }
 }
 
 @available(iOS 14.0, macOS 11.0, *)
-struct CouponShape: Shape {
+struct CardShape: Shape {
     func path(in rect: CGRect) -> Path {
         let arcRadius: CGFloat = 15
         let smallArcRadius:CGFloat = 10
@@ -85,38 +87,25 @@ struct CouponShape: Shape {
 }
 
 @available(iOS 14.0, macOS 11.0, *)
-public struct MobilityboxCouponView<Content: View>: View {
-    @Binding var coupon: MobilityboxCoupon
-    @ViewBuilder var navigationLink: () -> Content
+public struct MobilityboxCardView<Content: View>: View {
+    var coupon: Binding<MobilityboxCoupon>?
+    var ticket: Binding<MobilityboxTicket>?
+    var navigationLink: () -> Content?
     
-    public init(coupon: Binding<MobilityboxCoupon>, @ViewBuilder navigationLink: @escaping () -> Content) {
-        self._coupon = coupon
+    
+    public init(coupon: Binding<MobilityboxCoupon>? = nil, ticket: Binding<MobilityboxTicket>? = nil, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
+        self.coupon = coupon
+        self.ticket = ticket
         self.navigationLink = navigationLink
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            TopCouponView(coupon: $coupon)
-                .background(Color.white)
-                .clipShape(CouponShape())
-                .modifier(ShadowStyleModifier())
-            Seperator()
-                .stroke(Color (UIColor.label), style: StrokeStyle(lineWidth: 1,dash: [4,8], dashPhase: 4))
-                .frame(height: 0.5)
-                .padding(.horizontal)
-            BottomCouponView(coupon: $coupon, navigationLink: navigationLink)
-                .background(Color.white)
-                .clipShape(CouponShape().rotation(Angle(degrees: 180)))
-                .modifier(ShadowStyleModifier())
-            
-        }.padding(.vertical, 10)
-            .foregroundColor(.black)
+        if coupon != nil {
+            MobilityboxCouponView(coupon: coupon!, navigationLink: navigationLink)
+        } else if ticket != nil {
+            MobilityboxTicketView(ticket: ticket!, navigationLink: navigationLink)
+        } else {
+            MobilityboxLoadingView()
+        }
     }
 }
-
-//@available(iOS 14.0, macOS 11.0, *)
-//struct MobilityboxCouponView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MobilityboxCouponView(ticket: MobilityboxTicket(couponCode: ""))
-//    }
-//}

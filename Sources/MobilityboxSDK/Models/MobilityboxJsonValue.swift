@@ -1,11 +1,11 @@
 import Foundation
 
-public indirect enum JSONValue: Decodable {
+public indirect enum MobilityboxJSONValue: Decodable {
     case double(Double)
     case string(String)
     case bool(Bool)
-    case dictionary([String: JSONValue])
-    case array([JSONValue])
+    case dictionary([String: MobilityboxJSONValue])
+    case array([MobilityboxJSONValue])
     case `nil`
 
     public init(from decoder: Decoder) throws {
@@ -19,10 +19,10 @@ public indirect enum JSONValue: Decodable {
         } else if let value = try? singleValueContainer.decode(Double.self) {
             self = .double(value)
             return
-        } else if let value = try? singleValueContainer.decode([String: JSONValue].self) {
+        } else if let value = try? singleValueContainer.decode([String: MobilityboxJSONValue].self) {
             self = .dictionary(value)
             return
-        } else if let value = try? singleValueContainer.decode([JSONValue].self) {
+        } else if let value = try? singleValueContainer.decode([MobilityboxJSONValue].self) {
             self = .array(value)
             return
         } else if singleValueContainer.decodeNil() {
@@ -34,7 +34,7 @@ public indirect enum JSONValue: Decodable {
 }
 
 
-extension JSONValue {
+extension MobilityboxJSONValue {
     public var string: String? {
         switch self {
         case .string(let value):
@@ -59,7 +59,7 @@ extension JSONValue {
             return nil
         }
     }
-    public var dictionary: [String: JSONValue]? {
+    public var dictionary: [String: MobilityboxJSONValue]? {
         switch self {
         case .dictionary(let value):
             return value
@@ -67,7 +67,7 @@ extension JSONValue {
             return nil
         }
     }
-    public var array: [JSONValue]? {
+    public var array: [MobilityboxJSONValue]? {
         switch self {
         case .array(let value):
             return value
@@ -85,7 +85,7 @@ extension JSONValue {
     }
 }
 
-extension JSONValue: Encodable {
+extension MobilityboxJSONValue: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         

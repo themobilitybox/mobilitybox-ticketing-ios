@@ -13,19 +13,55 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
     }
     
     public let id: String
-    public let couponCode: String?
+    public let couponId: String?
     public let ticketId: String
     public var product: MobilityboxProduct?
+    let mobilityboxAPI: MobilityboxAPI
+    var fetch_counter = 0
     
-    public init(ticketId: String, couponCode: String, product: MobilityboxProduct) {
+    public init(ticketId: String, couponId: String, product: MobilityboxProduct) {
         self.id = ticketId
         self.ticketId = ticketId
-        self.couponCode = couponCode
+        self.couponId = couponId
         self.product = product
+        self.mobilityboxAPI = MobilityboxAPI()
+    }
+    
+    public init(ticketId: String, couponId: String, product: MobilityboxProduct, mobilityboxAPI: MobilityboxAPI) {
+        self.id = ticketId
+        self.ticketId = ticketId
+        self.couponId = couponId
+        self.product = product
+        self.mobilityboxAPI = mobilityboxAPI
+    }
+    
+    public init(ticketId: String) {
+        self.id = ticketId
+        self.ticketId = ticketId
+        self.couponId = nil
+        self.product = nil
+        self.mobilityboxAPI = MobilityboxAPI()
+    }
+    
+    public init(ticketId: String, mobilityboxAPI: MobilityboxAPI) {
+        self.id = ticketId
+        self.ticketId = ticketId
+        self.couponId = nil
+        self.product = nil
+        self.mobilityboxAPI = mobilityboxAPI
     }
     
     public func fetchTicket(completion: @escaping (MobilityboxTicket) -> ()) {
-        let url = URL(string: "https://api-integration.themobilitybox.com/v2/ticketing/tickets/\(self.ticketId).json")!
+        self.fetch_counter += 1
+        if self.fetch_counter > 5 {
+            print("canceling ticket fetch (too many retries)")
+            self.fetch_counter = 0
+            return
+        }
+        
+        print("fetch ticket - try count: \(self.fetch_counter)")
+        
+        let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/tickets/\(self.ticketId).json")!
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "accept")
@@ -42,32 +78,30 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
                 return
             }
             
-            if httpResponse.statusCode == 404 {
+            if httpResponse.statusCode == 202 {
                 // Retry:
                 if #available(iOS 10.0, *) {
-                    Timer.scheduledTimer(withTimeInterval: 1, repeats: false){_ in
-                        print("Ticket not available ... retry")
-                        self.fetchTicket(completion: completion)
-                    }
-                } else {
-                    //DO fucking nothing because it sucks // TODO: REMOVE THIS COMMENT
-                }
-                // FIXME: Try it a maximum of 30 Seconds or so
-                return
-            } else {
-                if httpResponse.statusCode == 200 {
-                    if let data = data {
-                        let api_result = try! JSONDecoder().decode(MobilityboxTicketFetchDecoder.self, from: data)
-                        
-                        DispatchQueue.main.async {
-                            completion(api_result.ticketObject())
+                    DispatchQueue.main.async {
+                        Timer.scheduledTimer(withTimeInterval: TimeInterval(2.0), repeats: false){_ in
+                            print("Ticket not available ... retry")
+                            self.fetchTicket(completion: completion)
                         }
                     }
-                } else {
-                    print("Fetching Ticket returend an unknown status code: \(String(describing: response))")
-                    return
+                } else {}
+                return
+            } else if httpResponse.statusCode == 200 {
+                if let data = data {
+                    let api_result = try! JSONDecoder().decode(MobilityboxTicketFetchDecoder.self, from: data)
+                    
+                    DispatchQueue.main.async {
+                        completion(api_result.ticketObject())
+                    }
                 }
+            } else {
+                print("Fetching Ticket returend an unknown status code: \(String(describing: response))")
+                return
             }
+            self.fetch_counter = 0
         })
         task.resume()
     }

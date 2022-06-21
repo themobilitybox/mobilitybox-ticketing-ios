@@ -114,10 +114,12 @@ public struct MobilityboxIdentificationView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     
+    
     public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)) {
         self._coupon = coupon
         self.activateCouponCallback = activateCouponCallback
     }
+    
     
     public var body: some View {
         IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback)
