@@ -1,3 +1,3 @@
-# MobilityboxSDK
+# Mobilitybox Ticketing for iOS
 
-A description of this package.
+Documentation in our [Wiki](https://github.com/vesputi/mobilitybox-ticketing-ios/wiki)
