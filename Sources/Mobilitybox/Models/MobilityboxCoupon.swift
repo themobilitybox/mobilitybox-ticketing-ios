@@ -78,20 +78,23 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     
     public let id: String
     public var product: MobilityboxProduct
+    public var area: MobilityboxArea
     public var activated: Bool
     var mobilityboxAPI: MobilityboxAPI!
     
     
-    public init(id: String, product: MobilityboxProduct, activated: Bool = false) {
+    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false) {
         self.id = id
         self.product = product
+        self.area = area
         self.activated = activated
         self.mobilityboxAPI = MobilityboxAPI()
     }
     
-    public init(id: String, product: MobilityboxProduct, activated: Bool = false, mobilityboxAPI: MobilityboxAPI) {
+    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, mobilityboxAPI: MobilityboxAPI) {
         self.id = id
         self.product = product
+        self.area = area
         self.activated = activated
         self.mobilityboxAPI = mobilityboxAPI
     }
@@ -128,5 +131,13 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
             }
         })
         task.resume()
+    }
+    
+    func getTitle() -> String {
+        return "\(area.properties.city_name) - \(product.getTitle())"
+    }
+    
+    func getDescription() -> String {
+        return "\(product.getDescription()) In the following Zone: \(area.properties.local_zone_name)"
     }
 }

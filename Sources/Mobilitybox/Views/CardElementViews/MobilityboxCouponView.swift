@@ -51,7 +51,7 @@ public struct MobilityboxCouponView<Content: View>: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            TopCardView(title: coupon.product.local_ticket_name, description: coupon.product.local_validity_description)
+            TopCardView(title: coupon.getTitle(), description: coupon.getDescription())
                 .background(Color.white)
                 .clipShape(CardShape())
                 .modifier(CardShadowStyleModifier())

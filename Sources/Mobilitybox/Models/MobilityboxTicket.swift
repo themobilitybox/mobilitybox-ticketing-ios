@@ -12,29 +12,24 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         lhs.id == rhs.id
     }
     
-    init(id: String, product: MobilityboxOrderedProduct, ticket: MobilityboxTicketDetails){
-        self.id = id
-        self.product = product
-        self.ticket = ticket
-    }
-    
     public let id: String
     public let product: MobilityboxOrderedProduct
     public let ticket: MobilityboxTicketDetails
-}
-
-struct MobilityboxTicketFetchDecoder: Codable {
-    let id: String
-    let product: MobilityboxOrderedProduct
-    let ticket: MobilityboxTicketDetails
-    let area: MobilityboxTicketArea
-    let valid_from: String
-    let valid_until: String
-    let ticket_created_at: String
+    public let area: MobilityboxTicketArea
+    public let valid_from: String
+    public let valid_until: String
+    public let ticket_created_at: String
     
-    public func ticketObject() -> MobilityboxTicket {
+    
+    func getTitle() -> String {
+        return "\(area.properties.city_name) - \(product.getTitle())"
+    }
+    
+    func getDescription() -> String {
+        let valid_from_formatted = MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: valid_from)!)
+        let valid_until_formatted = MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: valid_until)!)
         
-        return MobilityboxTicket(id: id, product: product, ticket: ticket)
+        return "valid from:\t\(valid_from_formatted)\nvalid until:\t\(valid_until_formatted)\nin Zone:\t\(area.properties.local_zone_name)"
     }
 }
 
@@ -47,15 +42,4 @@ public struct MobilityboxTicketMetaDetails: Codable {
     public let version: String?
     public let template: String
     public let requires_engine: String
-}
-
-public struct MobilityboxTicketArea: Codable {
-    public let id: String
-    public let properties: MobilityboxTicketAreaProperties
-}
-
-public struct MobilityboxTicketAreaProperties: Codable {
-    public let city_name: String
-    public let local_zone_name: String
-    public let geojson: MobilityboxJSONValue
 }

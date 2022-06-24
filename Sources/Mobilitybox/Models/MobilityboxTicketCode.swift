@@ -91,10 +91,10 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
                 return
             } else if httpResponse.statusCode == 200 {
                 if let data = data {
-                    let api_result = try! JSONDecoder().decode(MobilityboxTicketFetchDecoder.self, from: data)
+                    let ticket = try! JSONDecoder().decode(MobilityboxTicket.self, from: data)
                     
                     DispatchQueue.main.async {
-                        completion(api_result.ticketObject())
+                        completion(ticket)
                     }
                 }
             } else {

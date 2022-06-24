@@ -17,7 +17,7 @@ struct BottomTicketView<Content: View>: View {
             HStack(spacing: 0) {
                 HStack {
                     Image(systemName: "chevron.right.2")
-                    Text("show Ticket")
+                    Text("Show")
                         .fontWeight(.semibold)
                         .font(.system(size: 18))
                         .padding(.horizontal, 10)
@@ -50,7 +50,7 @@ public struct MobilityboxTicketView<Content: View>: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            TopCardView(title: ticket.product.local_ticket_name, description: ticket.product.local_validity_description)
+            TopCardView(title: ticket.getTitle(), description: ticket.getDescription())
                 .background(Color.white)
                 .clipShape(CardShape())
                 .modifier(CardShadowStyleModifier())
