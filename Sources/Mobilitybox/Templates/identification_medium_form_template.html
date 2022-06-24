@@ -238,7 +238,7 @@
                   form_input.classList.add("form-input")
                   form_input_label = "<label for='"+attribute+"'>"+attribute_schema.title+":</label>"
 
-                  if (attribute_schema.enum != undefined || attribute_schema.enum != null) {
+                  if (attribute_schema.enum != undefined && attribute_schema.enum != null) {
                     options = attribute_schema.enum
                     select = "<select name='"+attribute+"' id='"+attribute+"'>"+options.map(function(option){return "<option value='"+option+"'>"+option+"</option>"}).join("")+"</select>"
                     form_input.innerHTML = form_input_label+select
