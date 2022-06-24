@@ -23,7 +23,7 @@ struct IdentificationMediumProperty: Codable {
     }
 }
 
-struct IdentificaitonMediumDefinition: Codable {
+struct IdentificationMediumDefinition: Codable {
     var type: String
     var title: String
     var required: [String]
@@ -41,7 +41,7 @@ public struct IdentificationMediumSchema: Codable {
     var schema: String
     var type: String
     var oneOf: [IdentificationMediumOneOf]
-    var definitions: [String: IdentificaitonMediumDefinition]
+    var definitions: [String: IdentificationMediumDefinition]
     
     enum CodingKeys: String, CodingKey {
         case id = "$id"
