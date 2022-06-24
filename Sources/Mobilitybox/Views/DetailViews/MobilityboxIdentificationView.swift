@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import WebKit
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct IdentificationFormWebView: UIViewRepresentable {
     @Binding var coupon: MobilityboxCoupon
     var presentationMode: Binding<PresentationMode>
@@ -108,7 +108,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 public struct MobilityboxIdentificationView: View {
     @Binding var coupon: MobilityboxCoupon
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>

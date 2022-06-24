@@ -1,13 +1,11 @@
 import SwiftUI
 
-@available(iOS 14.0, macOS 11.0, *)
-struct BottomTicketView<Content: View>: View {
+@available(iOS 14.0, *)
+struct BottomTicketView: View {
     @Binding var ticket: MobilityboxTicket
-    var navigationLink: () -> Content?
     
-    init(ticket: Binding<MobilityboxTicket>, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
+    init(ticket: Binding<MobilityboxTicket>) {
         self._ticket = ticket
-        self.navigationLink = navigationLink
     }
     
     
@@ -28,9 +26,6 @@ struct BottomTicketView<Content: View>: View {
                 .foregroundColor(Color.white)
                 .background(Color(red: 0, green: 154/255, blue: 34/255))
                 .cornerRadius(40)
-                navigationLink()
-                    .frame(width: 0)
-                    .opacity(0)
             }
             Spacer()
         }
@@ -38,14 +33,13 @@ struct BottomTicketView<Content: View>: View {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
-public struct MobilityboxTicketView<Content: View>: View {
+
+@available(iOS 14.0, *)
+public struct MobilityboxTicketView: View {
     @Binding var ticket: MobilityboxTicket
-    var navigationLink: () -> Content?
     
-    public init(ticket: Binding<MobilityboxTicket>, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
+    public init(ticket: Binding<MobilityboxTicket>) {
         self._ticket = ticket
-        self.navigationLink = navigationLink
     }
     
     public var body: some View {
@@ -58,7 +52,7 @@ public struct MobilityboxTicketView<Content: View>: View {
                 .stroke(Color (UIColor.label), style: StrokeStyle(lineWidth: 1,dash: [4,8], dashPhase: 4))
                 .frame(height: 0.5)
                 .padding(.horizontal)
-            BottomTicketView(ticket: $ticket, navigationLink: navigationLink)
+            BottomTicketView(ticket: $ticket)
                 .background(Color.white)
                 .clipShape(CardShape().rotation(Angle(degrees: 180)))
                 .modifier(CardShadowStyleModifier())

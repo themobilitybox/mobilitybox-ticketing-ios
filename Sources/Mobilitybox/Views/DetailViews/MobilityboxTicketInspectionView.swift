@@ -2,7 +2,7 @@ import SwiftUI
 import WebKit
 import UniformTypeIdentifiers
 
-@available(iOS 13.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct TicketWebView: UIViewRepresentable {
     @State var ticket: MobilityboxTicket
     @Binding var renderEngine: MobilityboxTicketRenderingEngine
@@ -16,9 +16,7 @@ struct TicketWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.websiteDataStore = WKWebsiteDataStore.default()
-        if #available(iOS 14.0, *) {
-            webConfiguration.limitsNavigationsToAppBoundDomains = false
-        }
+        webConfiguration.limitsNavigationsToAppBoundDomains = false
         
         let view = WKWebView(frame: .zero, configuration: webConfiguration)
         view.navigationDelegate = context.coordinator

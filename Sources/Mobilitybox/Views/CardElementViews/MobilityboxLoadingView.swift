@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct BottomLoadingView: View {
     
     var body: some View {
@@ -27,7 +27,7 @@ struct BottomLoadingView: View {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 public struct MobilityboxLoadingView: View {
     
     public init(){}

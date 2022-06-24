@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct TopCardView: View {
     var title: String
     var description: String
@@ -20,34 +20,7 @@ struct TopCardView: View {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
-struct BottomCardView<Content: View>: View {
-    var buttonView: () -> Content?
-    var navigationLink: () -> Content?
-    
-    init(@ViewBuilder buttonView: @escaping () -> Content? = { nil }, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
-        self.buttonView = buttonView
-        self.navigationLink = navigationLink
-    }
-    
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            HStack(spacing: 0) {
-                buttonView()
-                navigationLink()
-                    .frame(width: 0)
-                    .opacity(0)
-            }
-            Spacer()
-        }
-        .padding(.vertical, 20)
-    }
-}
-
-
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct CardSeperator: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -58,7 +31,7 @@ struct CardSeperator: Shape {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct CardShadowStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -66,7 +39,7 @@ struct CardShadowStyleModifier: ViewModifier {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
+@available(iOS 14.0, *)
 struct CardShape: Shape {
     func path(in rect: CGRect) -> Path {
         let arcRadius: CGFloat = 15
@@ -86,24 +59,22 @@ struct CardShape: Shape {
     }
 }
 
-@available(iOS 14.0, macOS 11.0, *)
-public struct MobilityboxCardView<Content: View>: View {
+@available(iOS 14.0, *)
+public struct MobilityboxCardView: View {
     var coupon: Binding<MobilityboxCoupon>?
     var ticket: Binding<MobilityboxTicket>?
-    var navigationLink: () -> Content?
     
     
-    public init(coupon: Binding<MobilityboxCoupon>? = nil, ticket: Binding<MobilityboxTicket>? = nil, @ViewBuilder navigationLink: @escaping () -> Content? = { nil }) {
+    public init(coupon: Binding<MobilityboxCoupon>? = nil, ticket: Binding<MobilityboxTicket>? = nil) {
         self.coupon = coupon
         self.ticket = ticket
-        self.navigationLink = navigationLink
     }
     
     public var body: some View {
         if coupon != nil {
-            MobilityboxCouponView(coupon: coupon!, navigationLink: navigationLink)
+            MobilityboxCouponView(coupon: coupon!)
         } else if ticket != nil {
-            MobilityboxTicketView(ticket: ticket!, navigationLink: navigationLink)
+            MobilityboxTicketView(ticket: ticket!)
         } else {
             MobilityboxLoadingView()
         }
