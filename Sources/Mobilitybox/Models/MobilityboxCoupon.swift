@@ -99,9 +99,9 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.mobilityboxAPI = mobilityboxAPI
     }
     
-    func activate(passenger: MobilityboxPassenger, completion: @escaping (MobilityboxTicketCode) -> ()) {
+    public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
         let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
-        let body = passenger.identification_medium_json
+        let body = identificationMedium.identification_medium_json
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"

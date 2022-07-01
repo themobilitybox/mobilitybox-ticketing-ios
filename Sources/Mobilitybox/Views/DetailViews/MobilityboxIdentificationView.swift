@@ -88,8 +88,8 @@ struct IdentificationFormWebView: UIViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "activateCouponListener", let messageBody = message.body as? String {
                 print("activate")
-                let passenger = MobilityboxPassenger(identification_medium_json: messageBody)
-                parent.coupon.activate(passenger: passenger) { ticket in
+                let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
+                parent.coupon.activate(identificationMedium: identificationMedium) { ticket in
                     self.parent.activateCouponCallback(self.parent.coupon, ticket)
                     self.parent.presentationMode.wrappedValue.dismiss()
                 }
