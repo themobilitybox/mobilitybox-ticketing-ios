@@ -9,6 +9,11 @@ public struct MobilityboxAPI: Codable {
     public init(apiURL: String) {
         self.apiURL = apiURL
     }
+    
+    public init(apiURL: String, renderEngineURL: String) {
+        self.apiURL = apiURL
+        self.renderEngineURL = renderEngineURL
+    }
 }
 
 
@@ -16,8 +21,8 @@ struct MobilityboxFormatter {
 
     static let shortDateAndTime: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "de")
+        formatter.dateFormat = "dd. MMMM, HH:mm"
         return formatter
     }()
     

@@ -19,54 +19,30 @@ public struct MobilityboxCouponCode: Codable, Equatable {
     }
     
     public func fetchCoupon(completion: @escaping (MobilityboxCoupon) -> ()) {
-        if  let savedCoupon = self.loadCoupon() {
-            print("used saved Coupon")
-            completion(savedCoupon)
-        } else {
-            print("fetch coupon")
-            let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/coupons/\(self.couponId).json")!
-            
-            let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
-                if let error = error {
-                    print("Error with fetching coupon: \(error)")
-                    return
-                }
-                
-                guard let httpResponse = response as? HTTPURLResponse,
-                      (200...299).contains(httpResponse.statusCode) else {
-                    print("Error with the fetching coupon response, unexpected status code: \(String(describing: response))")
-                    return
-                }
-                
-                if let data = data {
-                    let coupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
-                    coupon.mobilityboxAPI = self.mobilityboxAPI
-                    DispatchQueue.main.async {
-                        self.saveCoupon(coupon: coupon)
-                        completion(coupon)
-                    }
-                }
-            })
-            task.resume()
-        }
-    }
-    
-    func loadCoupon() -> MobilityboxCoupon? {
-        if let data = UserDefaults.standard.data(forKey: self.couponId) {
-            if let decodedCoupon = try? JSONDecoder().decode(MobilityboxCoupon.self, from: data) {
-                return decodedCoupon
-            } else {
-                return nil
+        print("fetch coupon")
+        let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/coupons/\(self.couponId).json")!
+        
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+            if let error = error {
+                print("Error with fetching coupon: \(error)")
+                return
             }
-        } else {
-            return nil
-        }
-    }
-    
-    func saveCoupon(coupon: MobilityboxCoupon) {
-        if let encodedCoupon = try? JSONEncoder().encode(coupon) {
-            UserDefaults.standard.set(encodedCoupon, forKey: self.couponId)
-        }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                print("Error with the fetching coupon response, unexpected status code: \(String(describing: response))")
+                return
+            }
+            
+            if let data = data {
+                let coupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
+                coupon.mobilityboxAPI = self.mobilityboxAPI
+                DispatchQueue.main.async {
+                    completion(coupon)
+                }
+            }
+        })
+        task.resume()
     }
 }
 

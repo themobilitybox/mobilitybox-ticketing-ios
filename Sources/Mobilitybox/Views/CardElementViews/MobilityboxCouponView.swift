@@ -42,22 +42,44 @@ public struct MobilityboxCouponView: View {
         self._coupon = coupon
     }
     
+    
     public var body: some View {
-        VStack(spacing: 0) {
-            TopCardView(title: coupon.getTitle(), description: coupon.getDescription())
-                .background(Color.white)
-                .clipShape(CardShape())
-                .modifier(CardShadowStyleModifier())
+        HStack(spacing: 0) {
+            LeftCardView(title: coupon.getTitle()) {
+                HStack(alignment: .center) {
+                    if !coupon.activated {
+                        Text(coupon.getDescription()).font(.system(size: 9))
+                    } else {
+                        Text("Coupon was already activated.").font(.system(size: 12).italic())
+                    }
+                }
+            }
+            .background(Color.white)
+            .clipShape(CardShape())
             CardSeperator()
-                .stroke(Color (UIColor.label), style: StrokeStyle(lineWidth: 1,dash: [4,8], dashPhase: 4))
-                .frame(height: 0.5)
-                .padding(.horizontal)
-            BottomCouponView(coupon: $coupon)
+                .stroke(Color(UIColor.lightGray), style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [4, 7], dashPhase: 0))
+                .frame(width: 1)
                 .background(Color.white)
-                .clipShape(CardShape().rotation(Angle(degrees: 180)))
-                .modifier(CardShadowStyleModifier())
+                .padding(.vertical, 10)
+            RightCardView {
+                Button("activate") {}
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(!coupon.activated ? Color.blue : Color(UIColor.lightGray))
+                    .foregroundColor(.white)
+                    .font(.system(size: 14).bold())
+                    .clipShape(Capsule())
+            }
+            .background(Color.white)
+            .clipShape(CardShape().rotation(Angle(degrees: 180)))
             
-        }.padding(.vertical, 10)
-            .foregroundColor(.black)
+        }
+        .compositingGroup()
+        .frame(height: 100)
+        .padding(.vertical, 10)
+        .foregroundColor(.black.opacity(!coupon.activated ? 1 : 0.5))
+        .modifier(CardShadowStyleModifier())
+        .disabled(coupon.activated)
+        
     }
 }

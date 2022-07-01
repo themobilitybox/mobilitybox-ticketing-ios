@@ -31,6 +31,10 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         
         return "valid from:\t\(valid_from_formatted)\nvalid until:\t\(valid_until_formatted)\nin Zone:\t\(area.properties.local_zone_name)"
     }
+    
+    public func isValid() -> Bool {
+        return MobilityboxFormatter.isoDateTime.date(from: valid_until)! >= Date()
+    }
 }
 
 public struct MobilityboxTicketDetails: Codable {

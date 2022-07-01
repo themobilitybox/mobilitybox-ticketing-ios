@@ -15,7 +15,7 @@ struct BottomTicketView: View {
             HStack(spacing: 0) {
                 HStack {
                     Image(systemName: "chevron.right.2")
-                    Text("Show")
+                    Text("Inspect")
                         .fontWeight(.semibold)
                         .font(.system(size: 18))
                         .padding(.horizontal, 10)
@@ -43,21 +43,44 @@ public struct MobilityboxTicketView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            TopCardView(title: ticket.getTitle(), description: ticket.getDescription())
-                .background(Color.white)
-                .clipShape(CardShape())
-                .modifier(CardShadowStyleModifier())
+        HStack(spacing: 0) {
+            LeftCardView(title: ticket.getTitle()) {
+                HStack(alignment: .center) {
+                    if ticket.isValid() {
+                        Text("valid until:").font(.system(size: 9))
+                        Text(
+                            MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: ticket.valid_until)!)
+                        ).font(.system(size: 12).bold())
+                    } else {
+                        Text("Ticket is expired.").font(.system(size: 12).italic())
+                    }
+                }
+            }
+            .background(Color.white)
+            .clipShape(CardShape())
             CardSeperator()
-                .stroke(Color (UIColor.label), style: StrokeStyle(lineWidth: 1,dash: [4,8], dashPhase: 4))
-                .frame(height: 0.5)
-                .padding(.horizontal)
-            BottomTicketView(ticket: $ticket)
+                .stroke(Color(UIColor.lightGray), style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [4, 7], dashPhase: 0))
+                .frame(width: 1)
                 .background(Color.white)
-                .clipShape(CardShape().rotation(Angle(degrees: 180)))
-                .modifier(CardShadowStyleModifier())
+                .padding(.vertical, 10)
+            RightCardView {
+                Button("inspect") {}
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(ticket.isValid() ? Color(red: 0, green: 154/255, blue: 34/255) : Color(UIColor.lightGray))
+                    .foregroundColor(.white)
+                    .font(.system(size: 14).bold())
+                    .clipShape(Capsule())
+            }
+            .background(Color.white)
+            .clipShape(CardShape().rotation(Angle(degrees: 180)))
             
-        }.padding(.vertical, 10)
-            .foregroundColor(.black)
+        }
+        .compositingGroup()
+        .frame(height: 100)
+        .padding(.vertical, 10)
+        .foregroundColor(.black.opacity(ticket.isValid() ? 1 : 0.5))
+        .modifier(CardShadowStyleModifier())
+        .disabled(!ticket.isValid())
     }
 }

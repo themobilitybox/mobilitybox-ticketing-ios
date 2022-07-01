@@ -22,7 +22,8 @@ let package = Package(
             name: "Mobilitybox",
             dependencies: [],
             resources: [
-                .copy("Templates")
+                .process("Resources/Images"),
+                .copy("Resources/Templates")
             ]
         ),
         .testTarget(
