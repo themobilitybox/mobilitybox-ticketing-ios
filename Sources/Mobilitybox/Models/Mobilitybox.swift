@@ -1,24 +1,41 @@
 import Foundation
 
-public struct MobilityboxAPI: Codable {
-    public var apiURL: String = "https://api-integration.themobilitybox.com/v2"
-    public var renderEngineURL: String = "https://ticket-rendering-engine-integration.themobilitybox.com"
+public class MobilityboxAPI: Codable {
+    public static let shared = MobilityboxAPI()
     
-    public init() {}
-    
-    public init(apiURL: String) {
-        self.apiURL = apiURL
+    public struct Config {
+        var apiURL: String
+        var renderEngineURL: String
+        
+        public init(apiURL: String, renderEngineURL: String) {
+            self.apiURL = apiURL
+            self.renderEngineURL = renderEngineURL
+        }
     }
     
-    public init(apiURL: String, renderEngineURL: String) {
-        self.apiURL = apiURL
-        self.renderEngineURL = renderEngineURL
+    private static var config: Config?
+    
+    public let apiURL: String
+    public let renderEngineURL: String
+    
+    public class func setup(_ config: Config){
+        MobilityboxAPI.config = config
+    }
+    
+    private init() {
+        if let config = try? MobilityboxAPI.config {
+            self.apiURL = config.apiURL
+            self.renderEngineURL = config.renderEngineURL
+        } else {
+            self.apiURL = "https://api-integration.themobilitybox.com/v2"
+            self.renderEngineURL = "https://ticket-rendering-engine-integration.themobilitybox.com"
+        }
     }
 }
 
 
 struct MobilityboxFormatter {
-
+    
     static let shortDateAndTime: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "de")
@@ -39,5 +56,5 @@ struct MobilityboxFormatter {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
-
+    
 }

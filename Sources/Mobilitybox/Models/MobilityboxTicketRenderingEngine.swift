@@ -37,19 +37,10 @@ public class MobilityboxTicketRenderingEngine {
     
     public var engineCode: String! = nil
     public var engineString: String! = nil
-    let mobilityboxAPI: MobilityboxAPI
     var fetchedEngineCode: String! = nil
     var ticketRenderingEngineDelegate: TicketRenderingEngineDelegate! = nil
     
     public init() {
-        self.mobilityboxAPI = MobilityboxAPI()
-        self.ticketRenderingEngineDelegate = TicketRenderingEngineDelegate(engineCode: self)
-        self.loadEngine()
-        self.updateEngine()
-    }
-    
-    public init(mobilityboxAPI: MobilityboxAPI) {
-        self.mobilityboxAPI = mobilityboxAPI
         self.ticketRenderingEngineDelegate = TicketRenderingEngineDelegate(engineCode: self)
         self.loadEngine()
         self.updateEngine()
@@ -57,7 +48,7 @@ public class MobilityboxTicketRenderingEngine {
     
     public func updateEngine() {
         let config = URLSessionConfiguration.default
-        let url = URL(string: "\(mobilityboxAPI.renderEngineURL)/engine/1?inline=inline")!
+        let url = URL(string: "\(MobilityboxAPI.shared.renderEngineURL)/engine/1?inline=inline")!
 
         let session = URLSession(configuration: config, delegate: self.ticketRenderingEngineDelegate, delegateQueue: nil)
 

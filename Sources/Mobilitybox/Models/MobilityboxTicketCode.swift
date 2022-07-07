@@ -16,7 +16,6 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
     public let couponId: String?
     public let ticketId: String
     public var product: MobilityboxProduct?
-    let mobilityboxAPI: MobilityboxAPI
     var fetch_counter = 0
     
     public init(ticketId: String, couponId: String, product: MobilityboxProduct) {
@@ -24,15 +23,6 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
         self.ticketId = ticketId
         self.couponId = couponId
         self.product = product
-        self.mobilityboxAPI = MobilityboxAPI()
-    }
-    
-    public init(ticketId: String, couponId: String, product: MobilityboxProduct, mobilityboxAPI: MobilityboxAPI) {
-        self.id = ticketId
-        self.ticketId = ticketId
-        self.couponId = couponId
-        self.product = product
-        self.mobilityboxAPI = mobilityboxAPI
     }
     
     public init(ticketId: String) {
@@ -40,15 +30,6 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
         self.ticketId = ticketId
         self.couponId = nil
         self.product = nil
-        self.mobilityboxAPI = MobilityboxAPI()
-    }
-    
-    public init(ticketId: String, mobilityboxAPI: MobilityboxAPI) {
-        self.id = ticketId
-        self.ticketId = ticketId
-        self.couponId = nil
-        self.product = nil
-        self.mobilityboxAPI = mobilityboxAPI
     }
     
     public func fetchTicket(completion: @escaping (MobilityboxTicket) -> ()) {
@@ -61,7 +42,7 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
         
         print("fetch ticket - try count: \(self.fetch_counter)")
         
-        let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/tickets/\(self.ticketId).json")!
+        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/tickets/\(self.ticketId).json")!
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "accept")

@@ -6,21 +6,14 @@ public struct MobilityboxCouponCode: Codable, Equatable {
     }
     
     public var couponId: String
-    let mobilityboxAPI: MobilityboxAPI
     
     public init(couponId: String) {
         self.couponId = couponId
-        self.mobilityboxAPI = MobilityboxAPI()
-    }
-    
-    public init(couponId: String, mobilityboxAPI: MobilityboxAPI) {
-        self.couponId = couponId
-        self.mobilityboxAPI = mobilityboxAPI
     }
     
     public func fetchCoupon(completion: @escaping (MobilityboxCoupon) -> ()) {
         print("fetch coupon")
-        let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/coupons/\(self.couponId).json")!
+        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/coupons/\(self.couponId).json")!
         
         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
             if let error = error {
@@ -36,7 +29,6 @@ public struct MobilityboxCouponCode: Codable, Equatable {
             
             if let data = data {
                 let coupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
-                coupon.mobilityboxAPI = self.mobilityboxAPI
                 DispatchQueue.main.async {
                     completion(coupon)
                 }
@@ -56,27 +48,16 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var product: MobilityboxProduct
     public var area: MobilityboxArea
     public var activated: Bool
-    var mobilityboxAPI: MobilityboxAPI!
-    
     
     public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false) {
         self.id = id
         self.product = product
         self.area = area
         self.activated = activated
-        self.mobilityboxAPI = MobilityboxAPI()
-    }
-    
-    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, mobilityboxAPI: MobilityboxAPI) {
-        self.id = id
-        self.product = product
-        self.area = area
-        self.activated = activated
-        self.mobilityboxAPI = mobilityboxAPI
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
-        let url = URL(string: "\(mobilityboxAPI.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
+        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
         let body = identificationMedium.identification_medium_json
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -101,7 +82,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                 
                 DispatchQueue.main.async {
                     let ticketId = couponActivateResponse!["ticket_id"] as! String
-                    let ticket = MobilityboxTicketCode(ticketId: ticketId, couponId: self.id, product: self.product, mobilityboxAPI: self.mobilityboxAPI)
+                    let ticket = MobilityboxTicketCode(ticketId: ticketId, couponId: self.id, product: self.product)
                     completion(ticket)
                 }
             }
