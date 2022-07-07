@@ -64,7 +64,7 @@ public struct MobilityboxTicketView: View {
                 .background(Color.white)
                 .padding(.vertical, 10)
             RightCardView {
-                Button("inspect") {}
+                Text("inspect")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(ticket.isValid() ? Color(red: 0, green: 154/255, blue: 34/255) : Color(UIColor.lightGray))
