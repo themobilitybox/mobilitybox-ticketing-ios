@@ -1,36 +1,51 @@
 import Foundation
 
+public class Mobilitybox: Codable {
+    public static let api = MobilityboxAPI.shared
+    public static let renderingEngine = MobilityboxTicketRenderingEngine.shared
+    public static let identificationViewEngine = MobilityboxIdentificationViewEngine.shared
+    
+    private init() { }
+    
+    public class func setup (apiConfig: MobilityboxAPI.Config? = nil) {
+        MobilityboxAPI.setup(apiConfig)
+        MobilityboxTicketRenderingEngine.setup()
+        MobilityboxIdentificationViewEngine.setup()
+    }
+}
+
 public class MobilityboxAPI: Codable {
     public static let shared = MobilityboxAPI()
     
     public struct Config {
         var apiURL: String
-        var renderEngineURL: String
         
-        public init(apiURL: String, renderEngineURL: String) {
+        public init(apiURL: String) {
             self.apiURL = apiURL
-            self.renderEngineURL = renderEngineURL
         }
     }
     
     private static var config: Config?
     
     public let apiURL: String
-    public let renderEngineURL: String
     
-    public class func setup(_ config: Config){
-        MobilityboxAPI.config = config
+    public class func setup(_ config: Config? = nil){
+        if config != nil {
+            MobilityboxAPI.config = config
+        }
     }
     
     private init() {
-        if let config = try? MobilityboxAPI.config {
-            self.apiURL = config.apiURL
-            self.renderEngineURL = config.renderEngineURL
+        if MobilityboxAPI.config != nil {
+            self.apiURL = MobilityboxAPI.config!.apiURL
         } else {
-            self.apiURL = "https://api-integration.themobilitybox.com/v2"
-            self.renderEngineURL = "https://ticket-rendering-engine-integration.themobilitybox.com"
+            self.apiURL = "https://api.themobilitybox.com/v2"
         }
     }
+}
+
+public enum MobilityboxError: Error {
+    case unkown, retry_later
 }
 
 

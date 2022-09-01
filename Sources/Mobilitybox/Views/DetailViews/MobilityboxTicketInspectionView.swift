@@ -5,7 +5,6 @@ import UniformTypeIdentifiers
 @available(iOS 14.0, *)
 struct TicketWebView: UIViewRepresentable {
     @State var ticket: MobilityboxTicket
-    @Binding var renderEngine: MobilityboxTicketRenderingEngine
     
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil // TODO: Remove me
     
@@ -21,10 +20,10 @@ struct TicketWebView: UIViewRepresentable {
         let view = WKWebView(frame: .zero, configuration: webConfiguration)
         view.navigationDelegate = context.coordinator
         
-        let engineString = self.renderEngine.engineString
+        let engineString = Mobilitybox.renderingEngine.engineString
         
         if engineString != nil {
-            view.loadHTMLString(self.renderEngine.engineString, baseURL: URL(string: "about:blank"))
+            view.loadHTMLString(engineString!, baseURL: URL(string: "about:blank"))
         } else {
             print("no offline engine")
         }
@@ -75,14 +74,12 @@ struct TicketWebView: UIViewRepresentable {
 @available(iOS 14.0.0, *)
 public struct MobilityboxTicketInspectionView: View {
     var ticket: MobilityboxTicket
-    @Binding var renderEngine: MobilityboxTicketRenderingEngine
     
-    public init(ticket: MobilityboxTicket, renderEngine: Binding<MobilityboxTicketRenderingEngine>) {
+    public init(ticket: MobilityboxTicket) {
         self.ticket = ticket
-        self._renderEngine = renderEngine
     }
     
     public var body: some View {
-        TicketWebView(ticket: ticket, renderEngine: $renderEngine)
+        TicketWebView(ticket: ticket)
     }
 }

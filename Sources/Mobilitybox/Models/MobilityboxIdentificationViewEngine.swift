@@ -1,24 +1,19 @@
 import Foundation
 import SwiftUI
 
-
-public struct MobilityboxEngineData: Codable {
-    var engineCode: String
-    var engineString: String
-}
-
-public class MobilityboxTicketRenderingEngine {
-    public static let shared = MobilityboxTicketRenderingEngine()
+public class MobilityboxIdentificationViewEngine {
+    public static let shared = MobilityboxIdentificationViewEngine()
     
-    class TicketRenderingEngineDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
-        unowned var engineCode: MobilityboxTicketRenderingEngine! = nil
+    class IdentificationViewEngineDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
+        unowned var engineCode: MobilityboxIdentificationViewEngine! = nil
         
-        init(engineCode: MobilityboxTicketRenderingEngine) {
+        init(engineCode: MobilityboxIdentificationViewEngine) {
             self.engineCode = engineCode
         }
         
         func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
             let fetchedEngineCode = self.engineCode.engineRequestUrlToEngineCode(requestUrl: request.url!.absoluteString)
+            
             self.engineCode.fetchedEngineCode = fetchedEngineCode
             
             if (self.engineCode.isFetchedEngineCodeNewer(fetchedEngineCode: fetchedEngineCode)) {
@@ -33,7 +28,7 @@ public class MobilityboxTicketRenderingEngine {
     public var engineCode: String! = nil
     public var engineString: String! = nil
     var fetchedEngineCode: String! = nil
-    var ticketRenderingEngineDelegate: TicketRenderingEngineDelegate! = nil
+    var identificationViewEngineDelegate: IdentificationViewEngineDelegate! = nil
     
     public class func setup(){
         shared.loadEngine()
@@ -41,19 +36,19 @@ public class MobilityboxTicketRenderingEngine {
     }
     
     public init() {
-        self.ticketRenderingEngineDelegate = TicketRenderingEngineDelegate(engineCode: self)
+        self.identificationViewEngineDelegate = IdentificationViewEngineDelegate(engineCode: self)
     }
     
     public func updateEngine() {
         let config = URLSessionConfiguration.default
-        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/rendering_engine/1?inline=inline")!
-
-        let session = URLSession(configuration: config, delegate: self.ticketRenderingEngineDelegate, delegateQueue: nil)
-
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/identification_view/1?inline=inline")!
+        
+        let session = URLSession(configuration: config, delegate: self.identificationViewEngineDelegate, delegateQueue: nil)
+        
         let dataTask = session.dataTask(with: url, completionHandler: { (data, response, error) in
             
             if let error = error {
-                print("Error fetching render engine: \(error)")
+                print("Error fetching identification view engine: \(error)")
                 return
             }
             
@@ -72,6 +67,7 @@ public class MobilityboxTicketRenderingEngine {
                     if let data = data {
                         if let engineStringResponse = String(data: data, encoding: String.Encoding.utf8) {
                             DispatchQueue.main.async {
+                                
                                 self.saveEngine(engineString: engineStringResponse)
                             }
                         }
@@ -82,7 +78,7 @@ public class MobilityboxTicketRenderingEngine {
                 }
             }
         })
-
+        
         dataTask.resume()
     }
     
@@ -92,14 +88,14 @@ public class MobilityboxTicketRenderingEngine {
         self.fetchedEngineCode = nil
         
         if let encodedEngineData = try? JSONEncoder().encode(MobilityboxEngineData(engineCode: self.engineCode, engineString: self.engineString)) {
-            UserDefaults.standard.set(encodedEngineData, forKey: "MobilityboxTicketRenderingEngine")
-            print("stored render engine")
+            UserDefaults.standard.set(encodedEngineData, forKey: "MobilityboxIdentificationViewEngine")
+            print("stored identification view engine")
         }
     }
     
     func loadEngine() {
-        print("start load Engine...")
-        if let data = UserDefaults.standard.data(forKey: "MobilityboxTicketRenderingEngine") {
+        print("start load identification view engine...")
+        if let data = UserDefaults.standard.data(forKey: "MobilityboxIdentificationViewEngine") {
             if let decodedEngineData = try? JSONDecoder().decode(MobilityboxEngineData.self, from: data) {
                 self.engineCode = decodedEngineData.engineCode
                 self.engineString = decodedEngineData.engineString
@@ -117,9 +113,11 @@ public class MobilityboxTicketRenderingEngine {
         if self.engineCode == nil {
             return true
         }
-
-        let engineCodeComponents = self.engineCode.components(separatedBy: versionDelimiter) // <1>
+        
+        let engineCodeComponents = self.engineCode.components(separatedBy: versionDelimiter)
         let fetchedEngineCodeComponents = fetchedEngineCode.components(separatedBy: versionDelimiter)
+        
+        print("fetchedEngineCodeComponents: \(fetchedEngineCodeComponents)")
         
         if engineCodeComponents[0] < fetchedEngineCodeComponents[0] {
             return true
@@ -141,7 +139,7 @@ public class MobilityboxTicketRenderingEngine {
     }
     
     func engineRequestUrlToEngineCode(requestUrl: String) -> String {
-        let regex = try! NSRegularExpression(pattern: "(.*\\/engine\\/)|(\\?.*)")
+        let regex = try! NSRegularExpression(pattern: "(.*\\/identification_view\\/)|(\\?.*)")
         let range = NSMakeRange(0, requestUrl.count)
         let engineCodeParam = regex.stringByReplacingMatches(in: requestUrl, options: [], range: range, withTemplate: "")
         

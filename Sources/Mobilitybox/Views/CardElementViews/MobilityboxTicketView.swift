@@ -78,7 +78,6 @@ public struct MobilityboxTicketView: View {
         }
         .compositingGroup()
         .frame(height: 100)
-        .padding(.vertical, 10)
         .foregroundColor(.black.opacity(ticket.isValid() ? 1 : 0.5))
         .modifier(CardShadowStyleModifier())
         .disabled(!ticket.isValid())

@@ -16,36 +16,21 @@ struct IdentificationFormWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.websiteDataStore = WKWebsiteDataStore.default()
+        webConfiguration.limitsNavigationsToAppBoundDomains = false
         
-        let activateSourceJs = """
-            document.getElementById('submit_activate_button').addEventListener('click', function(){
-                const identification_medium = window.getIdentificationMedium()
-                window.webkit.messageHandlers.activateCouponListener.postMessage(identification_medium);
-            })
-        """
-        let activateScript = WKUserScript(source: activateSourceJs, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-        
-        
-        let closeIdentificationFormSourceJs = """
-            document.getElementById('close_identification_form_button').addEventListener('click', function(){
-                window.webkit.messageHandlers.closeIdentificationFormListener.postMessage("close");
-            })
-        """
-        let closeIdentificationFormScript = WKUserScript(source: closeIdentificationFormSourceJs, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-        
-        webConfiguration.userContentController.addUserScript(activateScript)
-        webConfiguration.userContentController.addUserScript(closeIdentificationFormScript)
         webConfiguration.userContentController.add(context.coordinator, name: "activateCouponListener")
         webConfiguration.userContentController.add(context.coordinator, name: "closeIdentificationFormListener")
         
         let view = WKWebView(frame: .zero, configuration: webConfiguration)
         view.navigationDelegate = context.coordinator
         
-        let projectBundle:Bundle = Bundle.module
-        let identificationMediumFormHtmlFile = projectBundle.url(forResource: "Templates/identification_medium_form_template", withExtension: "html")
+        let identificationViewEngineString = Mobilitybox.identificationViewEngine.engineString
         
-        view.loadFileURL(identificationMediumFormHtmlFile!,
-                         allowingReadAccessTo: identificationMediumFormHtmlFile!)
+        if identificationViewEngineString != nil {
+            view.loadHTMLString(identificationViewEngineString!, baseURL: URL(string: "about:blank"))
+        } else {
+            print("no offline identification view engine")
+        }
         
         return view
     }
@@ -74,8 +59,27 @@ struct IdentificationFormWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             if let json = try? JSONEncoder().encode(parent.coupon.product.identification_medium_schema) {
                 let theJSONText = String(data: json, encoding: .utf8)!
-                webView.evaluateJavaScript("window.loadIdentificationForms(\(theJSONText))")
+                webView.evaluateJavaScript("window.renderIdentificationView(\(theJSONText))")
+                
+                let activateSourceJs = """
+                    document.getElementById('submit_activate_button').addEventListener('click', function(){
+                        const identification_medium = window.getIdentificationMedium()
+                        window.webkit.messageHandlers.activateCouponListener.postMessage(identification_medium);
+                    })
+                """
+                
+                let closeIdentificationFormSourceJs = """
+                    document.getElementById('close_identification_form_button').addEventListener('click', function(){
+                        window.webkit.messageHandlers.closeIdentificationFormListener.postMessage("close");
+                    })
+                """
+                
+                DispatchQueue.main.async {
+                    webView.evaluateJavaScript(activateSourceJs)
+                    webView.evaluateJavaScript(closeIdentificationFormSourceJs)
+                }
             }
+            
             
             parent.loadStatusChanged?(false, nil)
         }

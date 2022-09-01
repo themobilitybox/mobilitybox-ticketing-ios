@@ -16,7 +16,6 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
     public let couponId: String?
     public let ticketId: String
     public var product: MobilityboxProduct?
-    var fetch_counter = 0
     
     public init(ticketId: String, couponId: String, product: MobilityboxProduct) {
         self.id = ticketId
@@ -32,57 +31,40 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
         self.product = nil
     }
     
-    public func fetchTicket(completion: @escaping (MobilityboxTicket) -> ()) {
-        self.fetch_counter += 1
-        if self.fetch_counter > 5 {
-            print("canceling ticket fetch (too many retries)")
-            self.fetch_counter = 0
-            return
-        }
-        
-        print("fetch ticket - try count: \(self.fetch_counter)")
-        
-        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/tickets/\(self.ticketId).json")!
+    public func fetchTicket(onSuccess completion: @escaping (MobilityboxTicket) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/tickets/\(self.ticketId).json")!
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "accept")
         request.httpMethod = "PATCH"
         
         let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
-            if let error = error {
-                print("Error fetching ticket: \(error)")
+            if error != nil {
+                failure!(MobilityboxError.unkown)
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                print("Error with HTTP Connection: \(String(describing: response))")
+                failure!(MobilityboxError.unkown)
                 return
             }
             
             if httpResponse.statusCode == 202 {
-                // Retry:
-                if #available(iOS 10.0, *) {
-                    DispatchQueue.main.async {
-                        Timer.scheduledTimer(withTimeInterval: TimeInterval(2.0), repeats: false){_ in
-                            print("Ticket not available ... retry")
-                            self.fetchTicket(completion: completion)
-                        }
-                    }
-                } else {}
+                failure!(MobilityboxError.retry_later)
                 return
             } else if httpResponse.statusCode == 200 {
                 if let data = data {
                     let ticket = try! JSONDecoder().decode(MobilityboxTicket.self, from: data)
-                    
                     DispatchQueue.main.async {
                         completion(ticket)
                     }
                 }
             } else {
-                print("Fetching Ticket returend an unknown status code: \(String(describing: response))")
+                if failure != nil {
+                    failure!(MobilityboxError.unkown)
+                }
                 return
             }
-            self.fetch_counter = 0
         })
         task.resume()
     }

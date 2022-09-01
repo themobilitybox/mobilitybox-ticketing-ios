@@ -76,7 +76,6 @@ public struct MobilityboxCouponView: View {
         }
         .compositingGroup()
         .frame(height: 100)
-        .padding(.vertical, 10)
         .foregroundColor(.black.opacity(!coupon.activated ? 1 : 0.5))
         .modifier(CardShadowStyleModifier())
         .disabled(coupon.activated)

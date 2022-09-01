@@ -26,14 +26,14 @@ public struct MobilityboxProduct: Codable, Identifiable {
 public struct MobilityboxOrderedProduct: Codable {
     public var id: String
     public var area_id: String
-    public var local_ticket_name: String
-    public var local_validity_description: String
+    public var currency: String
     public var ticket_type: String
     public var customer_type: String
     public var price_in_cents: Int
-    public var currency: String
+    public var local_ticket_name: String
     public var validity_in_minutes: Int
-    
+    public var local_validity_description: String
+
     func getTitle() -> String {
         let customer_type_string = (customer_type == "adult" ? "Adult " : ((customer_type == "child" ? "Child " : "")))
         let ticket_type_string = (ticket_type == "single" ? "Single " : ((ticket_type == "day" ? "Day " : "")))

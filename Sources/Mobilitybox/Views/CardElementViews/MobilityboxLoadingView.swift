@@ -59,7 +59,6 @@ public struct MobilityboxLoadingView: View {
         }
         .compositingGroup()
         .frame(height: 100)
-        .padding(.vertical, 10)
         .foregroundColor(.black)
         .modifier(CardShadowStyleModifier())
         .redacted(reason: .placeholder)

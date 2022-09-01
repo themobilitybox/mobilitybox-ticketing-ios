@@ -1,44 +1,5 @@
 import Foundation
 
-public struct MobilityboxCouponCode: Codable, Equatable {
-    public static func == (lhs: MobilityboxCouponCode, rhs: MobilityboxCouponCode) -> Bool {
-        lhs.couponId == rhs.couponId
-    }
-    
-    public var couponId: String
-    
-    public init(couponId: String) {
-        self.couponId = couponId
-    }
-    
-    public func fetchCoupon(completion: @escaping (MobilityboxCoupon) -> ()) {
-        print("fetch coupon")
-        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/coupons/\(self.couponId).json")!
-        
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
-            if let error = error {
-                print("Error with fetching coupon: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                print("Error with the fetching coupon response, unexpected status code: \(String(describing: response))")
-                return
-            }
-            
-            if let data = data {
-                let coupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
-                DispatchQueue.main.async {
-                    completion(coupon)
-                }
-            }
-        })
-        task.resume()
-    }
-}
-
-
 public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public static func == (lhs: MobilityboxCoupon, rhs: MobilityboxCoupon) -> Bool {
         return lhs.id == rhs.id
@@ -57,7 +18,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
-        let url = URL(string: "\(MobilityboxAPI.shared.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
         let body = identificationMedium.identification_medium_json
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

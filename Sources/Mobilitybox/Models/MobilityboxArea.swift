@@ -19,11 +19,12 @@ public struct MobilityboxAreaGeometry: Codable {
 
 public struct MobilityboxTicketArea: Codable {
     public let id: String
-    public let properties: MobilityboxTicketAreaProperties
+    public var type: String?
+    public var properties: MobilityboxTicketAreaProperties
+    public let geojson: MobilityboxJSONValue
 }
 
 public struct MobilityboxTicketAreaProperties: Codable {
     public let city_name: String
     public let local_zone_name: String
-    public let geojson: MobilityboxJSONValue
 }
