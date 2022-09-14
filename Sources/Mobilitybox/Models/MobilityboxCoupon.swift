@@ -51,6 +51,31 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         task.resume()
     }
     
+    public func update(onSuccess completion: @escaping () -> Void, onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/coupons/\(self.id).json")!
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+            guard
+                error == nil,
+                let httpResponse = response as? HTTPURLResponse,
+                (200...299).contains(httpResponse.statusCode)
+            else {
+                failure?(MobilityboxError.unkown)
+                return
+            }
+            
+            if let data = data {
+                let updatedCoupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
+                DispatchQueue.main.async {
+                    self.product = updatedCoupon.product
+                    self.area = updatedCoupon.area
+                    self.activated = updatedCoupon.activated
+                    completion()
+                }
+            }
+        })
+        task.resume()
+    }
+    
     func getTitle() -> String {
         return "\(area.properties.city_name) - \(product.getTitle())"
     }
