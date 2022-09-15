@@ -76,7 +76,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         task.resume()
     }
     
-    func getTitle() -> String {
+    public func getTitle() -> String {
         return "\(area.properties.city_name) - \(product.getTitle())"
     }
     
