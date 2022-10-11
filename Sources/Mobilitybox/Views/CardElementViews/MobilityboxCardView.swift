@@ -3,25 +3,41 @@ import SwiftUI
 @available(iOS 14.0, *)
 struct LeftCardView<Content: View>: View {
     var title: String
+    var environment: String
     @ViewBuilder var content: () -> Content
     
-    public init(title: String, @ViewBuilder content: @escaping (() -> Content)) {
+    public init(title: String, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
         self.title = title
         self.content = content
+        self.environment = environment
     }
     
     var body: some View {
-        HStack {
-            Spacer()
-            VStack(alignment: .center, spacing: 5) {
-                Text(title).font(.system(size: 16).bold())
-                content()
+        ZStack(alignment: .topLeading) {
+            HStack {
+                Spacer()
+                VStack(alignment: .center, spacing: 5) {
+                    Text(title).font(.system(size: 16, design: .rounded).bold())
+                    content()
+                }
+                .padding(.horizontal, 10)
+                Spacer()
             }
-            .padding(.horizontal, 10)
-            Spacer()
+            .frame(height: 100)
+            .background(Color.white)
+            ZStack {
+                Rectangle()
+                    .foregroundColor(.orange)
+                Text("TEST")
+                    .foregroundColor(.white)
+                    .font(Font.system(size: 8, weight: .bold, design: .rounded))
+            }
+            .frame(width: 100, height: 16)
+            .rotationEffect(Angle(degrees: -45.0), anchor: .center)
+            .offset(x: -32, y: 8)
+            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 1, y: 1)
+            .opacity(environment == "test" ? 1 : 0)
         }
-        .frame(height: 100)
-        .background(Color.white)
     }
 }
 
@@ -117,22 +133,22 @@ public struct MobilityboxCardView: View {
 @available(iOS 14.0, *)
 extension Image {
     init(packageResource name: String, ofType type: String) {
-        #if canImport(UIKit)
+#if canImport(UIKit)
         guard let path = Bundle.module.path(forResource: name, ofType: type),
               let image = UIImage(contentsOfFile: path) else {
             self.init(name)
             return
         }
         self.init(uiImage: image)
-        #elseif canImport(AppKit)
+#elseif canImport(AppKit)
         guard let path = Bundle.module.path(forResource: name, ofType: type),
               let image = NSImage(contentsOfFile: path) else {
             self.init(name)
             return
         }
         self.init(nsImage: image)
-        #else
+#else
         self.init(name)
-        #endif
+#endif
     }
 }

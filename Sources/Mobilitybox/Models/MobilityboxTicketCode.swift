@@ -55,6 +55,7 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
             } else if httpResponse.statusCode == 200 {
                 if let data = data {
                     let ticket = try! JSONDecoder().decode(MobilityboxTicket.self, from: data)
+                    ticket.couponId = self.couponId
                     DispatchQueue.main.async {
                         completion(ticket)
                     }

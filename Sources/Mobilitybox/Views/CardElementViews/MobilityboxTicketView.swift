@@ -1,37 +1,5 @@
 import SwiftUI
 
-@available(iOS 14.0, *)
-struct BottomTicketView: View {
-    @Binding var ticket: MobilityboxTicket
-    
-    init(ticket: Binding<MobilityboxTicket>) {
-        self._ticket = ticket
-    }
-    
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            HStack(spacing: 0) {
-                HStack {
-                    Image(systemName: "chevron.right.2")
-                    Text("Inspect")
-                        .fontWeight(.semibold)
-                        .font(.system(size: 18))
-                        .padding(.horizontal, 10)
-                    Image(systemName: "chevron.left.2")
-                }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 25)
-                .foregroundColor(Color.white)
-                .background(Color(red: 0, green: 154/255, blue: 34/255))
-                .cornerRadius(40)
-            }
-            Spacer()
-        }
-        .padding(.vertical, 20)
-    }
-}
 
 
 @available(iOS 14.0, *)
@@ -44,15 +12,15 @@ public struct MobilityboxTicketView: View {
     
     public var body: some View {
         HStack(spacing: 0) {
-            LeftCardView(title: ticket.getTitle()) {
+            LeftCardView(title: ticket.getTitle(), environment: ticket.environment) {
                 HStack(alignment: .center) {
                     if ticket.isValid() {
-                        Text("valid until:").font(.system(size: 9))
+                        Text("gültig bis:").font(.system(size: 9))
                         Text(
-                            MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: ticket.valid_until)!)
+                            "\(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: ticket.valid_until)!)) Uhr"
                         ).font(.system(size: 12).bold())
                     } else {
-                        Text("Ticket is expired.").font(.system(size: 12).italic())
+                        Text("Ticket ist abgelaufen.").font(.system(size: 12).italic())
                     }
                 }
             }
@@ -64,12 +32,12 @@ public struct MobilityboxTicketView: View {
                 .background(Color.white)
                 .padding(.vertical, 10)
             RightCardView {
-                Text("inspect")
+                Text("anzeigen")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(ticket.isValid() ? Color(red: 0, green: 154/255, blue: 34/255) : Color(UIColor.lightGray))
                     .foregroundColor(.white)
-                    .font(.system(size: 14).bold())
+                    .font(.system(size: 14, design: .rounded).bold())
                     .clipShape(Capsule())
             }
             .background(Color.white)

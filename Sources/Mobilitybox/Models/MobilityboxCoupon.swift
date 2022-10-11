@@ -9,12 +9,14 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var product: MobilityboxProduct
     public var area: MobilityboxArea
     public var activated: Bool
+    public var environment: String
     
-    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false) {
+    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String) {
         self.id = id
         self.product = product
         self.area = area
         self.activated = activated
+        self.environment = environment
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
@@ -69,6 +71,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                     self.product = updatedCoupon.product
                     self.area = updatedCoupon.area
                     self.activated = updatedCoupon.activated
+                    self.environment = updatedCoupon.environment
                     completion()
                 }
             }
@@ -81,6 +84,6 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     func getDescription() -> String {
-        return "\(product.getDescription()) In the following Zone: \(area.properties.local_zone_name)"
+        return "\(product.getDescription()) In der folgenden Tarifzone: \(area.properties.local_zone_name)"
     }
 }
