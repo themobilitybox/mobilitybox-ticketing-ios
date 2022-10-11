@@ -88,6 +88,17 @@ struct IdentificationFormWebView: UIViewRepresentable {
             parent.loadStatusChanged?(false, error)
         }
         
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            let url = navigationAction.request.url
+            
+            if url != nil && url?.absoluteString != "about:blank" {
+                decisionHandler(.cancel)
+                UIApplication.shared.open(url!)
+            } else {
+                decisionHandler(.allow)
+            }
+        }
+        
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "activateCouponListener", let messageBody = message.body as? String {
