@@ -8,6 +8,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     var presentationMode: Binding<PresentationMode>
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
+    var couponActivationRunning = false
     
     func makeCoordinator() -> IdentificationFormWebView.Coordinator {
         Coordinator(self)
@@ -44,9 +45,13 @@ struct IdentificationFormWebView: UIViewRepresentable {
         return copy
     }
     
+    mutating func setCouponActivateRunning(state: Bool) {
+        self.couponActivationRunning = state
+    }
+    
     
     class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
-        let parent: IdentificationFormWebView
+        var parent: IdentificationFormWebView
         
         init(_ parent: IdentificationFormWebView) {
             self.parent = parent
@@ -103,10 +108,14 @@ struct IdentificationFormWebView: UIViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "activateCouponListener", let messageBody = message.body as? String {
                 print("activate")
-                let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
-                parent.coupon.activate(identificationMedium: identificationMedium) { ticket in
-                    self.parent.activateCouponCallback(self.parent.coupon, ticket)
-                    self.parent.presentationMode.wrappedValue.dismiss()
+                if !parent.couponActivationRunning {
+                    parent.setCouponActivateRunning(state: true)
+                    let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
+                    parent.coupon.activate(identificationMedium: identificationMedium) { ticket in
+                        self.parent.activateCouponCallback(self.parent.coupon, ticket)
+                        self.parent.presentationMode.wrappedValue.dismiss()
+                        parent.setCouponActivateRunning(state: false)
+                    }
                 }
             }
             if message.name == "closeIdentificationFormListener", let messageBody = message.body as? String {
