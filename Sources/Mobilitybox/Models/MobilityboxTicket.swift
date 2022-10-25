@@ -21,6 +21,7 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     public var ticket_created_at: String
     public var environment: String
     public var couponId: String?
+    public var createdAt: Date? = Date()
     
     public func getTitle() -> String {
         return "\(area.properties.city_name) - \(product.getTitle())"
@@ -28,6 +29,17 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     
     public func isValid() -> Bool {
         return MobilityboxFormatter.isoDateTime.date(from: valid_until)! >= Date()
+    }
+    
+    func getAddedAgoText() -> String? {
+        if (self.createdAt == nil) {
+            return nil
+        }
+          
+        let currentDate = Date()
+        let delta = currentDate - self.createdAt!
+        
+        return MobilityboxFormatter.timeInterval.string(from: delta)!
     }
 }
 

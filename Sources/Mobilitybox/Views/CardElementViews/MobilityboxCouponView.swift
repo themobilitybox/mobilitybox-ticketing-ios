@@ -12,7 +12,7 @@ public struct MobilityboxCouponView: View {
     
     public var body: some View {
         HStack(spacing: 0) {
-            LeftCardView(title: coupon.getTitle(), environment: coupon.environment) {
+            LeftCardView(title: coupon.getTitle(), addedAgoText: coupon.getAddedAgoText(), environment: coupon.environment) {
                 HStack(alignment: .center) {
                     if !coupon.activated {
                         Text(coupon.getDescription()).font(.system(size: 9))

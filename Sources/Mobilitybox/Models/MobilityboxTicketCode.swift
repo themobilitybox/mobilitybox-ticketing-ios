@@ -56,6 +56,7 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
                 if let data = data {
                     let ticket = try! JSONDecoder().decode(MobilityboxTicket.self, from: data)
                     ticket.couponId = self.couponId
+                    ticket.createdAt = Date()
                     DispatchQueue.main.async {
                         completion(ticket)
                     }

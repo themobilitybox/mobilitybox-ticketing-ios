@@ -72,4 +72,13 @@ struct MobilityboxFormatter {
         return formatter
     }()
     
+    static let timeInterval: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .short
+        formatter.zeroFormattingBehavior = .dropAll
+        formatter.allowedUnits = [.day, .hour, .minute]
+        
+        return formatter
+    }()
+
 }

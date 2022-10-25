@@ -3,11 +3,13 @@ import SwiftUI
 @available(iOS 14.0, *)
 struct LeftCardView<Content: View>: View {
     var title: String
+    var addedAgoText: String?
     var environment: String
     @ViewBuilder var content: () -> Content
     
-    public init(title: String, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
+    public init(title: String, addedAgoText: String? = nil, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
         self.title = title
+        self.addedAgoText = addedAgoText
         self.content = content
         self.environment = environment
     }
@@ -19,6 +21,15 @@ struct LeftCardView<Content: View>: View {
                 VStack(alignment: .center, spacing: 5) {
                     Text(title).font(.system(size: 16, design: .rounded).bold())
                     content()
+                    if (addedAgoText != nil) {
+                        HStack {
+                            Spacer()
+                            Text("hinzugefügt vor: \(addedAgoText ?? "")")
+                                .font(.system(size: 9))
+                                .italic()
+                                .foregroundColor(Color(UIColor.gray))
+                        }.padding(.horizontal, 5)
+                    }
                 }
                 .padding(.horizontal, 10)
                 Spacer()

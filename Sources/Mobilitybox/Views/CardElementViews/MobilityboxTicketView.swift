@@ -12,7 +12,7 @@ public struct MobilityboxTicketView: View {
     
     public var body: some View {
         HStack(spacing: 0) {
-            LeftCardView(title: ticket.getTitle(), environment: ticket.environment) {
+            LeftCardView(title: ticket.getTitle(), addedAgoText: ticket.getAddedAgoText(), environment: ticket.environment) {
                 HStack(alignment: .center) {
                     if ticket.isValid() {
                         Text("gültig bis:").font(.system(size: 9))

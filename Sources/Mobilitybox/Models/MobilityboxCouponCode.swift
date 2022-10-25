@@ -32,6 +32,7 @@ public struct MobilityboxCouponCode: Codable, Equatable {
             
             if let data = data {
                 let coupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
+                coupon.createdAt = Date()
                 DispatchQueue.main.async {
                     completion(coupon)
                 }

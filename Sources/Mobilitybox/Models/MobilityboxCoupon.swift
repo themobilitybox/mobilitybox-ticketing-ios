@@ -10,13 +10,15 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var area: MobilityboxArea
     public var activated: Bool
     public var environment: String
+    public var createdAt: Date? = Date()
     
-    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String) {
+    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil) {
         self.id = id
         self.product = product
         self.area = area
         self.activated = activated
         self.environment = environment
+        self.createdAt = createdAt
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
@@ -85,5 +87,23 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     
     func getDescription() -> String {
         return "\(product.getDescription()) In der folgenden Tarifzone: \(area.properties.local_zone_name)"
+    }
+    
+    func getAddedAgoText() -> String? {
+        if (self.createdAt == nil) {
+            return nil
+        }
+          
+        let currentDate = Date()
+        let delta = currentDate - self.createdAt!
+        
+        return MobilityboxFormatter.timeInterval.string(from: delta)!
+    }
+}
+
+
+extension Date {
+    static func - (lhs: Date, rhs: Date) -> TimeInterval {
+        return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
     }
 }
