@@ -40,17 +40,23 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
         
         let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
             if error != nil {
-                failure!(MobilityboxError.unkown)
+                if failure != nil {
+                    failure!(MobilityboxError.unkown)
+                }
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                failure!(MobilityboxError.unkown)
+                if failure != nil {
+                    failure!(MobilityboxError.unkown)
+                }
                 return
             }
             
             if httpResponse.statusCode == 202 {
-                failure!(MobilityboxError.retry_later)
+                if failure != nil {
+                    failure!(MobilityboxError.retry_later)
+                }
                 return
             } else if httpResponse.statusCode == 200 {
                 if let data = data {
