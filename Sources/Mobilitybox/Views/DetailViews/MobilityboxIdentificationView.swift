@@ -114,7 +114,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
                     parent.coupon.activate(identificationMedium: identificationMedium) { ticket in
                         self.parent.activateCouponCallback(self.parent.coupon, ticket)
                         self.parent.presentationMode.wrappedValue.dismiss()
-                        parent.setCouponActivateRunning(state: false)
+                        self.parent.setCouponActivateRunning(state: false)
                     }
                 }
             }

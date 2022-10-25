@@ -8,7 +8,6 @@ public struct MobilityboxNavigationLinkType {
     public var type: String
 }
 
-
 @available(iOS 14.0, *)
 public struct MobilityboxNavigationLink<OriginContent: View, DestinationContent: View>: View {
     let linkType: MobilityboxNavigationLinkType
@@ -16,10 +15,60 @@ public struct MobilityboxNavigationLink<OriginContent: View, DestinationContent:
     @ViewBuilder var navigationDestination: () -> DestinationContent
     @State var showDestinationView = false
     
-    public init(linkType: MobilityboxNavigationLinkType = .push, @ViewBuilder navigationOrigin: @escaping () -> OriginContent, @ViewBuilder navigationDestination: @escaping () -> DestinationContent) {
+    var navigationLinkContent: AnyView
+
+    public init(linkType: MobilityboxNavigationLinkType = .push, showDestinationView: Binding<Bool>? = nil, @ViewBuilder navigationOrigin: @escaping () -> OriginContent, @ViewBuilder navigationDestination: @escaping () -> DestinationContent) {
         self.linkType = linkType
         self.navigationOrigin = navigationOrigin
         self.navigationDestination = navigationDestination
+        
+        if let showDestinationView = showDestinationView {
+            self.navigationLinkContent = AnyView(MobilityboxNavigationLinkInner(linkType: linkType, showDestinationView: showDestinationView, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination))
+        } else {
+            self.navigationLinkContent = AnyView(IndependentMobilityboxNavigationLink(linkType: linkType, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination))
+        }
+    }
+
+    public var body: some View {
+        navigationLinkContent
+    }
+
+    public struct DependentMobilityboxNavigationLink: View {
+        let linkType: MobilityboxNavigationLinkType
+        @ViewBuilder var navigationOrigin: () -> OriginContent
+        @ViewBuilder var navigationDestination: () -> DestinationContent
+        @Binding var showDestinationView: Bool
+
+        public var body: some View {
+            MobilityboxNavigationLinkInner(linkType: linkType, showDestinationView: $showDestinationView, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination)
+        }
+    }
+
+    public struct IndependentMobilityboxNavigationLink: View {
+        let linkType: MobilityboxNavigationLinkType
+        @ViewBuilder var navigationOrigin: () -> OriginContent
+        @ViewBuilder var navigationDestination: () -> DestinationContent
+        @State var showDestinationView = false
+
+        public var body: some View {
+            MobilityboxNavigationLinkInner(linkType: linkType, showDestinationView: $showDestinationView, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination)
+        }
+    }
+}
+
+
+@available(iOS 14.0, *)
+public struct MobilityboxNavigationLinkInner<OriginContent: View, DestinationContent: View>: View {
+    let linkType: MobilityboxNavigationLinkType
+    @ViewBuilder var navigationOrigin: () -> OriginContent
+    @ViewBuilder var navigationDestination: () -> DestinationContent
+    @Binding var showDestinationView: Bool
+    
+    public init(linkType: MobilityboxNavigationLinkType = .push, showDestinationView: Binding<Bool>, @ViewBuilder navigationOrigin: @escaping () -> OriginContent, @ViewBuilder navigationDestination: @escaping () -> DestinationContent) {
+        self.linkType = linkType
+        self.navigationOrigin = navigationOrigin
+        self.navigationDestination = navigationDestination
+        self._showDestinationView = showDestinationView
     }
     
     
