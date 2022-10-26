@@ -76,6 +76,7 @@ struct MobilityboxFormatter {
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .short
         formatter.zeroFormattingBehavior = .dropAll
+        formatter.maximumUnitCount = 1
         formatter.allowedUnits = [.day, .hour, .minute]
         
         return formatter
