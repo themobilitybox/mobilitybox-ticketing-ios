@@ -118,6 +118,10 @@ public class MobilityboxIdentificationViewEngine {
         
         print("current IdentificationView Engine Components: \(engineCodeComponents)")
         print("fetched IdentificationView Engine Components: \(fetchedEngineCodeComponents)")
+
+        if (fetchedEngineCodeComponents.count > engineCodeComponents.count || fetchedEngineCodeComponents.count == 1 ) {
+            return true
+        }
         
         let currentMajorTag = Int(engineCodeComponents[0]) ?? 0
         let fetchedMajorTag = Int(fetchedEngineCodeComponents[0]) ?? 0

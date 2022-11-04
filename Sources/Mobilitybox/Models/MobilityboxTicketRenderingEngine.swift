@@ -123,6 +123,10 @@ public class MobilityboxTicketRenderingEngine {
         print("current Rendering Engine Components: \(engineCodeComponents)")
         print("fetched Rendering Engine Components: \(fetchedEngineCodeComponents)")
         
+        if (fetchedEngineCodeComponents.count > engineCodeComponents.count || fetchedEngineCodeComponents.count == 1 ) {
+            return true
+        }
+        
         let currentMajorTag = Int(engineCodeComponents[0]) ?? 0
         let fetchedMajorTag = Int(fetchedEngineCodeComponents[0]) ?? 0
         let currentMinorTag = Int(engineCodeComponents[1]) ?? 0
