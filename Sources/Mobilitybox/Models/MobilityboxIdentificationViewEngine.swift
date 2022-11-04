@@ -67,7 +67,6 @@ public class MobilityboxIdentificationViewEngine {
                     if let data = data {
                         if let engineStringResponse = String(data: data, encoding: String.Encoding.utf8) {
                             DispatchQueue.main.async {
-                                
                                 self.saveEngine(engineString: engineStringResponse)
                             }
                         }
@@ -117,15 +116,23 @@ public class MobilityboxIdentificationViewEngine {
         let engineCodeComponents = self.engineCode.components(separatedBy: versionDelimiter)
         let fetchedEngineCodeComponents = fetchedEngineCode.components(separatedBy: versionDelimiter)
         
-        print("fetchedEngineCodeComponents: \(fetchedEngineCodeComponents)")
+        print("current IdentificationView Engine Components: \(engineCodeComponents)")
+        print("fetched IdentificationView Engine Components: \(fetchedEngineCodeComponents)")
         
-        if engineCodeComponents[0] < fetchedEngineCodeComponents[0] {
+        let currentMajorTag = Int(engineCodeComponents[0]) ?? 0
+        let fetchedMajorTag = Int(fetchedEngineCodeComponents[0]) ?? 0
+        let currentMinorTag = Int(engineCodeComponents[1]) ?? 0
+        let fetchedMinorTag = Int(fetchedEngineCodeComponents[1]) ?? 0
+        let currentPatchTag = engineCodeComponents[2]
+        let fetchedPatchTag = fetchedEngineCodeComponents[2]
+        
+        if currentMajorTag < fetchedMajorTag {
             return true
-        } else if engineCodeComponents[0] == fetchedEngineCodeComponents[0] {
-            if engineCodeComponents[1] < fetchedEngineCodeComponents[1] {
+        } else if currentMajorTag == fetchedMajorTag {
+            if currentMinorTag < fetchedMinorTag {
                 return true
-            } else if engineCodeComponents[1] == fetchedEngineCodeComponents[1] {
-                return engineCodeComponents[2] != fetchedEngineCodeComponents[2]
+            } else if currentMinorTag == fetchedMinorTag {
+                return currentPatchTag != fetchedPatchTag
             } else {
                 return false
             }

@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-
 public struct MobilityboxEngineData: Codable {
     var engineCode: String
     var engineString: String
@@ -118,16 +117,26 @@ public class MobilityboxTicketRenderingEngine {
             return true
         }
 
-        let engineCodeComponents = self.engineCode.components(separatedBy: versionDelimiter) // <1>
+        let engineCodeComponents = self.engineCode.components(separatedBy: versionDelimiter)
         let fetchedEngineCodeComponents = fetchedEngineCode.components(separatedBy: versionDelimiter)
         
-        if engineCodeComponents[0] < fetchedEngineCodeComponents[0] {
+        print("current Rendering Engine Components: \(engineCodeComponents)")
+        print("fetched Rendering Engine Components: \(fetchedEngineCodeComponents)")
+        
+        let currentMajorTag = Int(engineCodeComponents[0]) ?? 0
+        let fetchedMajorTag = Int(fetchedEngineCodeComponents[0]) ?? 0
+        let currentMinorTag = Int(engineCodeComponents[1]) ?? 0
+        let fetchedMinorTag = Int(fetchedEngineCodeComponents[1]) ?? 0
+        let currentPatchTag = engineCodeComponents[2]
+        let fetchedPatchTag = fetchedEngineCodeComponents[2]
+        
+        if currentMajorTag < fetchedMajorTag {
             return true
-        } else if engineCodeComponents[0] == fetchedEngineCodeComponents[0] {
-            if engineCodeComponents[1] < fetchedEngineCodeComponents[1] {
+        } else if currentMajorTag == fetchedMajorTag {
+            if currentMinorTag < fetchedMinorTag {
                 return true
-            } else if engineCodeComponents[1] == fetchedEngineCodeComponents[1] {
-                return engineCodeComponents[2] != fetchedEngineCodeComponents[2]
+            } else if currentMinorTag == fetchedMinorTag {
+                return currentPatchTag != fetchedPatchTag
             } else {
                 return false
             }
@@ -141,7 +150,7 @@ public class MobilityboxTicketRenderingEngine {
     }
     
     func engineRequestUrlToEngineCode(requestUrl: String) -> String {
-        let regex = try! NSRegularExpression(pattern: "(.*\\/engine\\/)|(\\?.*)")
+        let regex = try! NSRegularExpression(pattern: "(.*\\/rendering_engine\\/)|(\\?.*)")
         let range = NSMakeRange(0, requestUrl.count)
         let engineCodeParam = regex.stringByReplacingMatches(in: requestUrl, options: [], range: range, withTemplate: "")
         
