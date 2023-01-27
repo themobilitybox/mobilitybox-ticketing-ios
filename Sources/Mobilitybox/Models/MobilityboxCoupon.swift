@@ -9,6 +9,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var product: MobilityboxProduct
     public var area: MobilityboxArea
     public var activated: Bool
+    public var subscription: MobilityboxSubscription?
     public var environment: String
     public var createdAt: Date? = Date()
     

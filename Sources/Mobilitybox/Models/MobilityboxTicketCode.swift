@@ -13,21 +13,18 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
     }
     
     public let id: String
-    public let couponId: String?
     public let ticketId: String
     public var product: MobilityboxProduct?
     
-    public init(ticketId: String, couponId: String, product: MobilityboxProduct) {
+    public init(ticketId: String, product: MobilityboxProduct) {
         self.id = ticketId
         self.ticketId = ticketId
-        self.couponId = couponId
         self.product = product
     }
     
     public init(ticketId: String) {
         self.id = ticketId
         self.ticketId = ticketId
-        self.couponId = nil
         self.product = nil
     }
     
@@ -61,8 +58,8 @@ public class MobilityboxTicketCode: Identifiable, Codable, Equatable {
             } else if httpResponse.statusCode == 200 {
                 if let data = data {
                     let ticket = try! JSONDecoder().decode(MobilityboxTicket.self, from: data)
-                    ticket.couponId = self.couponId
                     ticket.createdAt = Date()
+                    ticket.wasReactivated = false
                     DispatchQueue.main.async {
                         completion(ticket)
                     }

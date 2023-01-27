@@ -13,15 +13,18 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     }
     
     public let id: String
+    public var coupon_id: String
+    public var coupon_reactivation_key: String?
     public var product: MobilityboxOrderedProduct
     public var ticket: MobilityboxTicketDetails
     public var area: MobilityboxTicketArea
     public var valid_from: String
     public var valid_until: String
     public var ticket_created_at: String
+    public var sold_at: String
     public var environment: String
-    public var couponId: String?
     public var createdAt: Date? = Date()
+    var wasReactivated: Bool? = false
     
     public func getTitle() -> String {
         return "\(area.properties.city_name) - \(product.getTitle())"
