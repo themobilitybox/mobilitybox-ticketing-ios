@@ -9,6 +9,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     var activationStartTime: Binding<Date>? = nil
+    @Binding var showLoadingSpinner: Bool
     var couponActivationRunning = false
     
     func makeCoordinator() -> IdentificationFormWebView.Coordinator {
@@ -108,11 +109,12 @@ struct IdentificationFormWebView: UIViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "activateCouponListener", let messageBody = message.body as? String {
                 print("activate")
-                if !parent.couponActivationRunning {
-                    parent.setCouponActivateRunning(state: true)
+                if !self.parent.couponActivationRunning {
+                    self.parent.showLoadingSpinner = true
+                    self.parent.setCouponActivateRunning(state: true)
                     let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
-                    parent.coupon.activate(identificationMedium: identificationMedium, activationStartTime: self.parent.activationStartTime?.wrappedValue) { ticket in
-                        self.parent.activateCouponCallback(self.parent.coupon, ticket)
+                    self.parent.coupon.activate(identificationMedium: identificationMedium, activationStartTime: self.parent.activationStartTime?.wrappedValue) { ticketCode in
+                        self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
                         self.parent.presentationMode.wrappedValue.dismiss()
                         self.parent.setCouponActivateRunning(state: false)
                     }
@@ -138,7 +140,7 @@ public struct MobilityboxIdentificationView: View {
     var activationStartTime: Binding<Date>?
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
-    
+    @State var showLoadingSpinner: Bool = false
     
     public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartTime: Binding<Date>? = nil) {
         self._coupon = coupon
@@ -148,7 +150,15 @@ public struct MobilityboxIdentificationView: View {
     
     
     public var body: some View {
-        IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartTime: activationStartTime)
+        ZStack {
+            IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartTime: activationStartTime, showLoadingSpinner: $showLoadingSpinner)
+            if showLoadingSpinner {
+                ZStack {
+                    Color.white.opacity(0.5).edgesIgnoringSafeArea(.all)
+                    ProgressView()
+                }
+            }
+        }
     }
 }
 
