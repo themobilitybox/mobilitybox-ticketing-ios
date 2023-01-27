@@ -14,13 +14,19 @@ public struct MobilityboxTicketView: View {
         HStack(spacing: 0) {
             LeftCardView(title: ticket.getTitle(), addedAgoText: ticket.getAddedAgoText(), environment: ticket.environment) {
                 HStack(alignment: .center) {
-                    if ticket.isValid() {
+                    switch ticket.validity() {
+                    case .valid:
                         Text("gültig bis:").font(.system(size: 9))
                         Text(
                             "\(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: ticket.valid_until)!)) Uhr"
                         ).font(.system(size: 12).bold())
-                    } else {
+                    case .expired:
                         Text("Ticket ist abgelaufen.").font(.system(size: 12).italic())
+                    case .future:
+                        Text("gültig ab:").font(.system(size: 9))
+                        Text(
+                            "\(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: ticket.valid_from)!)) Uhr"
+                        ).font(.system(size: 12).bold())
                     }
                 }
             }
@@ -35,7 +41,7 @@ public struct MobilityboxTicketView: View {
                 Text("anzeigen")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(ticket.isValid() ? Color(red: 0, green: 154/255, blue: 34/255) : Color(UIColor.lightGray))
+                    .background(ticket.validity() == .expired ? Color(UIColor.lightGray) : Color(red: 0, green: 154/255, blue: 34/255))
                     .foregroundColor(.white)
                     .font(.system(size: 14, design: .rounded).bold())
                     .clipShape(Capsule())
@@ -46,8 +52,8 @@ public struct MobilityboxTicketView: View {
         }
         .compositingGroup()
         .frame(height: 100)
-        .foregroundColor(.black.opacity(ticket.isValid() ? 1 : 0.5))
+        .foregroundColor(.black.opacity(ticket.validity() == .expired ? 0.5 : 1))
         .modifier(CardShadowStyleModifier())
-        .disabled(!ticket.isValid())
+        .disabled(ticket.validity() == .expired)
     }
 }

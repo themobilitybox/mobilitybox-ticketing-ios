@@ -30,8 +30,14 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         return "\(area.properties.city_name) - \(product.getTitle())"
     }
     
-    public func isValid() -> Bool {
-        return MobilityboxFormatter.isoDateTime.date(from: valid_until)! >= Date()
+    public func validity() -> MobilityboxTicketValidity {
+        if MobilityboxFormatter.isoDateTime.date(from: self.valid_until)! < Date() {
+            return .expired
+        } else if MobilityboxFormatter.isoDateTime.date(from: self.valid_from)! > Date() {
+            return .future
+        } else {
+            return .valid
+        }
     }
     
     func getAddedAgoText() -> String? {
@@ -44,6 +50,9 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         
         return MobilityboxFormatter.timeInterval.string(from: delta)!
     }
+
+public enum MobilityboxTicketValidity: Error {
+    case valid, expired, future
 }
 
 public struct MobilityboxTicketDetails: Codable {
