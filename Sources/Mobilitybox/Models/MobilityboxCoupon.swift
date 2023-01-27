@@ -23,8 +23,19 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
+        let bodyJson = identificationMedium.identification_medium_json
+        activateCall(body: bodyJson, completion: completion)
+    }
+    
+    public func reactivate(reactivation_key: String, completion: @escaping (MobilityboxTicketCode) -> ()) {
+        let body: [String: String] = ["reactivation_key": reactivation_key]
+        if let bodyJson = try? JSONEncoder().encode(body) {
+            activateCall(body: String(data: bodyJson, encoding: .utf8)!, completion: completion)
+        }
+    }
+    
+    func activateCall(body: String, completion: @escaping (MobilityboxTicketCode) -> ()) {
         let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
-        let body = identificationMedium.identification_medium_json
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
@@ -48,7 +59,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                 
                 DispatchQueue.main.async {
                     let ticketId = couponActivateResponse!["ticket_id"] as! String
-                    let ticket = MobilityboxTicketCode(ticketId: ticketId, couponId: self.id, product: self.product)
+                    let ticket = MobilityboxTicketCode(ticketId: ticketId, product: self.product)
                     completion(ticket)
                 }
             }

@@ -50,6 +50,23 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         
         return MobilityboxFormatter.timeInterval.string(from: delta)!
     }
+    
+    public func reactivate(onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        if self.product.is_subscription && self.coupon_reactivation_key != nil && !self.wasReactivated! {
+            MobilityboxCouponCode(couponId: self.coupon_id).fetchCoupon { fetchedCoupon in
+                if (fetchedCoupon.subscription != nil && fetchedCoupon.subscription!.coupon_reactivatable) {
+                    fetchedCoupon.reactivate(reactivation_key: self.coupon_reactivation_key!) { fetchedTicketCode in
+                        print("Reactivated Ticket id: \(fetchedTicketCode.ticketId)")
+                        DispatchQueue.main.async {
+                            completion(fetchedTicketCode)
+                            self.wasReactivated = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 public enum MobilityboxTicketValidity: Error {
     case valid, expired, future
