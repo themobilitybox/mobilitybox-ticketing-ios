@@ -8,6 +8,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     var presentationMode: Binding<PresentationMode>
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
+    var activationStartTime: Binding<Date>? = nil
     var couponActivationRunning = false
     
     func makeCoordinator() -> IdentificationFormWebView.Coordinator {
@@ -85,7 +86,6 @@ struct IdentificationFormWebView: UIViewRepresentable {
                 }
             }
             
-            
             parent.loadStatusChanged?(false, nil)
         }
         
@@ -111,7 +111,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
                 if !parent.couponActivationRunning {
                     parent.setCouponActivateRunning(state: true)
                     let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
-                    parent.coupon.activate(identificationMedium: identificationMedium) { ticket in
+                    parent.coupon.activate(identificationMedium: identificationMedium, activationStartTime: self.parent.activationStartTime?.wrappedValue) { ticket in
                         self.parent.activateCouponCallback(self.parent.coupon, ticket)
                         self.parent.presentationMode.wrappedValue.dismiss()
                         self.parent.setCouponActivateRunning(state: false)
@@ -120,7 +120,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
             }
             if message.name == "closeIdentificationFormListener", let messageBody = message.body as? String {
                 if messageBody == "close" {
-                    parent.presentationMode.wrappedValue.dismiss()
+                    self.parent.presentationMode.wrappedValue.dismiss()
                 }
             }
         }
@@ -135,18 +135,20 @@ struct IdentificationFormWebView: UIViewRepresentable {
 @available(iOS 14.0, *)
 public struct MobilityboxIdentificationView: View {
     @Binding var coupon: MobilityboxCoupon
+    var activationStartTime: Binding<Date>?
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     
     
-    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)) {
+    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartTime: Binding<Date>? = nil) {
         self._coupon = coupon
         self.activateCouponCallback = activateCouponCallback
+        self.activationStartTime = activationStartTime
     }
     
     
     public var body: some View {
-        IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback)
+        IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartTime: activationStartTime)
     }
 }
 

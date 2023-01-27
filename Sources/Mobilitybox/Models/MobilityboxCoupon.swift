@@ -22,9 +22,19 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
     }
     
-    public func activate(identificationMedium: MobilityboxIdentificationMedium, completion: @escaping (MobilityboxTicketCode) -> ()) {
-        let bodyJson = identificationMedium.identification_medium_json
-        activateCall(body: bodyJson, completion: completion)
+    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartTime: Date? = nil, completion: @escaping (MobilityboxTicketCode) -> ()) {
+        
+        var body = identificationMedium.getIdentificationMedium()?.dictionary
+        if body != nil {
+            if activationStartTime != nil {
+                let activation_start_time = MobilityboxFormatter.isoDateTime.string(from: activationStartTime!)
+                body!["activation_start_time"] = MobilityboxJSONValue.string(activation_start_time)
+            }
+            
+            if let bodyJson = try? JSONEncoder().encode(body) {
+                activateCall(body: String(data: bodyJson, encoding: .utf8)!, completion: completion)
+            }
+        }
     }
     
     public func reactivate(reactivation_key: String, completion: @escaping (MobilityboxTicketCode) -> ()) {
