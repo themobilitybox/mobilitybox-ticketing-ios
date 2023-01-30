@@ -29,7 +29,7 @@ public struct MobilityboxCouponView: View {
                 .background(Color.white)
                 .padding(.vertical, 10)
             RightCardView {
-                Text("entwerten")
+                Text("aktivieren")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(!coupon.activated ? Color.blue : Color(UIColor.lightGray))

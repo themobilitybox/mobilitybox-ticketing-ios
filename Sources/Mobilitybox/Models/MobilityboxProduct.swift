@@ -28,7 +28,7 @@ public struct MobilityboxProduct: Codable, Identifiable {
         case "duration_in_minutes":
             if duration_in_minutes != nil {
                 let validity_time_string = (duration_in_minutes! > 90 ? "\(duration_in_minutes! / 60) Stunden" : "\(duration_in_minutes!) Minuten")
-                return "Dieses Ticket ist nach dem Entwerten \(validity_time_string) gültig."
+                return "Dieses Ticket ist nach dem Aktivieren \(validity_time_string) gültig."
             } else {
                 return ""
             }
