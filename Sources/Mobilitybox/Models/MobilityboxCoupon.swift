@@ -22,13 +22,13 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
     }
     
-    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartTime: Date? = nil, completion: @escaping (MobilityboxTicketCode) -> ()) {
+    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartDateTime: Date? = nil, completion: @escaping (MobilityboxTicketCode) -> ()) {
         
         var body = identificationMedium.getIdentificationMedium()?.dictionary
         if body != nil {
-            if activationStartTime != nil {
-                let activation_start_time = MobilityboxFormatter.isoDateTime.string(from: activationStartTime!)
-                body!["activation_start_time"] = MobilityboxJSONValue.string(activation_start_time)
+            if activationStartDateTime != nil {
+                let activation_start_datetime = MobilityboxFormatter.isoDateTime.string(from: activationStartDateTime!)
+                body!["activation_start_datetime"] = MobilityboxJSONValue.string(activation_start_datetime)
             }
             
             if let bodyJson = try? JSONEncoder().encode(body) {
