@@ -68,7 +68,7 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     }
 }
 
-public enum MobilityboxTicketValidity: Error {
+public enum MobilityboxTicketValidity {
     case valid, expired, future
 }
 
