@@ -62,7 +62,7 @@ struct RightCardView<Content: View>: View {
     
     var body: some View {
         ZStack {
-            Image(packageResource: "fake_barcode", ofType: "gif")
+            Image("fake_barcode")
                 .resizable()
                 .frame(width: 75, height: 75, alignment: .center)
                 .opacity(0.25)
@@ -138,28 +138,5 @@ public struct MobilityboxCardView: View {
         } else {
             MobilityboxLoadingView()
         }
-    }
-}
-
-@available(iOS 14.0, *)
-extension Image {
-    init(packageResource name: String, ofType type: String) {
-#if canImport(UIKit)
-        guard let path = Bundle.module.path(forResource: name, ofType: type),
-              let image = UIImage(contentsOfFile: path) else {
-            self.init(name)
-            return
-        }
-        self.init(uiImage: image)
-#elseif canImport(AppKit)
-        guard let path = Bundle.module.path(forResource: name, ofType: type),
-              let image = NSImage(contentsOfFile: path) else {
-            self.init(name)
-            return
-        }
-        self.init(nsImage: image)
-#else
-        self.init(name)
-#endif
     }
 }
