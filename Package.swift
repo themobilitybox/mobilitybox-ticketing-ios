@@ -20,10 +20,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Mobilitybox",
-            dependencies: [],
-            resources: [
-                .process("Resources/Images")
-            ]
+            dependencies: []
         ),
         .testTarget(
             name: "MobilityboxTests",

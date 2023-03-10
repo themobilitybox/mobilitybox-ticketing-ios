@@ -17,6 +17,9 @@ Order Tickets with the Mobilitybox API and receive Coupons for the individual ti
   spec.swift_version = "5.6"
   spec.source       = { :git => "https://github.com/themobilitybox/mobilitybox-ticketing-ios.git", :tag => "#{spec.version}" }
   spec.source_files  = "Sources", "Sources/**/*.{h,m,swift}"
-  spec.resources = "Sources/Mobilitybox/Resources/Images/*.{png,gif}"
+  spec.resources = "Sources/**/*.{xcassets}"
+  spec.resource_bundles = {
+    'Mobilitybox' => ["Sources/**/*.{xcassets}"]
+  }
 
 end

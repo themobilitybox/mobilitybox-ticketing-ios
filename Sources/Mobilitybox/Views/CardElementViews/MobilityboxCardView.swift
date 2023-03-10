@@ -60,9 +60,18 @@ struct RightCardView<Content: View>: View {
         self.content = content
     }
     
+    func getImageBundle() -> Bundle {
+        #if SWIFT_PACKAGE
+        return Bundle.module
+        #else
+        let bundle = Bundle(for: Mobilitybox.self)
+        return Bundle(url: bundle.url(forResource: "Mobilitybox", withExtension: "bundle")!)!
+        #endif
+    }
+    
     var body: some View {
         ZStack {
-            Image("fake_barcode")
+            Image("fake_barcode", bundle: getImageBundle())
                 .resizable()
                 .frame(width: 75, height: 75, alignment: .center)
                 .opacity(0.25)
