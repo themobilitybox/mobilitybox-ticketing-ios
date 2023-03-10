@@ -6,6 +6,8 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     public let id: String
+    public let original_coupon_id: String?
+    public let restored_coupon_id: String?
     public var product: MobilityboxProduct
     public var area: MobilityboxArea
     public var activated: Bool
@@ -13,8 +15,10 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var environment: String
     public var createdAt: Date? = Date()
     
-    public init(id: String, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil) {
+    public init(id: String, original_coupon_id: String? = nil, restored_coupon_id: String? = nil, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil) {
         self.id = id
+        self.original_coupon_id = original_coupon_id
+        self.restored_coupon_id = restored_coupon_id
         self.product = product
         self.area = area
         self.activated = activated
@@ -26,7 +30,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         
         var body = identificationMedium.getIdentificationMedium()?.dictionary
         if body != nil {
-            if activationStartDateTime != nil {
+            if activationStartDateTime != nil && self.original_coupon_id == nil {
                 let activation_start_datetime = MobilityboxFormatter.isoDateTime.string(from: activationStartDateTime!)
                 body!["activation_start_datetime"] = MobilityboxJSONValue.string(activation_start_datetime)
             }
