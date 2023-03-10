@@ -10,6 +10,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     var activationStartDateTime: Binding<Date>? = nil
     @Binding var showLoadingSpinner: Bool
+    @Binding var showActivationFailedAlert: Bool
     var couponActivationRunning = false
     
     func makeCoordinator() -> IdentificationFormWebView.Coordinator {
@@ -117,6 +118,11 @@ struct IdentificationFormWebView: UIViewRepresentable {
                         self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
                         self.parent.presentationMode.wrappedValue.dismiss()
                         self.parent.setCouponActivateRunning(state: false)
+                    } onFailure: { mobilityboxError in
+                        print("Identification View: failed to activate coupon")
+                        self.parent.setCouponActivateRunning(state: false)
+                        self.parent.showLoadingSpinner = false
+                        self.parent.showActivationFailedAlert = true
                     }
                 }
             }
@@ -141,6 +147,7 @@ public struct MobilityboxIdentificationView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     @State var showLoadingSpinner: Bool = false
+    @State var showActivationFailedAlert: Bool = false
     
     public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartDateTime: Binding<Date>? = nil) {
         self._coupon = coupon
@@ -151,7 +158,10 @@ public struct MobilityboxIdentificationView: View {
     
     public var body: some View {
         ZStack {
-            IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, showLoadingSpinner: $showLoadingSpinner)
+            IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
+                .alert(isPresented: $showActivationFailedAlert) {
+                    Alert(title: Text("Hinweis"), message: Text("Die Aktivierung des Tickets wurde wegen eines Fehlers abgebrochen. Bitte versuchen Sie es erneut."), dismissButton: .default(Text("OK")))
+                }
             if showLoadingSpinner {
                 ZStack {
                     Color.white.opacity(0.5).edgesIgnoringSafeArea(.all)

@@ -26,7 +26,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
     }
     
-    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartDateTime: Date? = nil, completion: @escaping (MobilityboxTicketCode) -> ()) {
+    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartDateTime: Date? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         
         var body = identificationMedium.getIdentificationMedium()?.dictionary
         if body != nil {
@@ -36,19 +36,19 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
             }
             
             if let bodyJson = try? JSONEncoder().encode(body) {
-                activateCall(body: String(data: bodyJson, encoding: .utf8)!, completion: completion)
+                activateCall(body: String(data: bodyJson, encoding: .utf8)!, onSuccess: completion, onFailure: failure)
             }
         }
     }
     
-    public func reactivate(reactivation_key: String, completion: @escaping (MobilityboxTicketCode) -> ()) {
+    public func reactivate(reactivation_key: String, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         let body: [String: String] = ["reactivation_key": reactivation_key]
         if let bodyJson = try? JSONEncoder().encode(body) {
-            activateCall(body: String(data: bodyJson, encoding: .utf8)!, completion: completion)
+            activateCall(body: String(data: bodyJson, encoding: .utf8)!, onSuccess: completion, onFailure: failure)
         }
     }
     
-    func activateCall(body: String, completion: @escaping (MobilityboxTicketCode) -> ()) {
+    func activateCall(body: String, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/coupons/\(self.id)/activate.json")!
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -59,12 +59,18 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
             if let error = error {
                 print("Error with activating coupon: \(error)")
+                DispatchQueue.main.async {
+                    failure?(MobilityboxError.unkown)
+                }
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Error with the activating coupon response, unexpected status code: \(String(describing: response))")
+                DispatchQueue.main.async {
+                    failure?(MobilityboxError.unkown)
+                }
                 return
             }
             

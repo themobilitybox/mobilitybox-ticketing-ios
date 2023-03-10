@@ -61,7 +61,15 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
                             completion(fetchedTicketCode)
                             self.wasReactivated = true
                         }
+                    } onFailure: { mobilityboxError in
+                        DispatchQueue.main.async {
+                            failure?(mobilityboxError)
+                        }
                     }
+                }
+            } onFailure: { mobilityboxError in
+                DispatchQueue.main.async {
+                    failure?(mobilityboxError)
                 }
             }
         }
