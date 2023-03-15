@@ -45,7 +45,7 @@ public class MobilityboxAPI: Codable {
 }
 
 public enum MobilityboxError: Error {
-    case unkown, retry_later
+    case unkown, retry_later, not_reactivatable
 }
 
 
