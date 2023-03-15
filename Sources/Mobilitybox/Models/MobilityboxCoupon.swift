@@ -6,8 +6,8 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     public let id: String
-    public let original_coupon_id: String?
-    public let restored_coupon_id: String?
+    public var original_coupon_id: String?
+    public var restored_coupon_id: String?
     public var product: MobilityboxProduct
     public var area: MobilityboxArea
     public var activated: Bool
@@ -102,6 +102,8 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
             if let data = data {
                 let updatedCoupon = try! JSONDecoder().decode(MobilityboxCoupon.self, from: data)
                 DispatchQueue.main.async {
+                    self.original_coupon_id = updatedCoupon.original_coupon_id
+                    self.restored_coupon_id = updatedCoupon.restored_coupon_id
                     self.product = updatedCoupon.product
                     self.area = updatedCoupon.area
                     self.activated = updatedCoupon.activated
