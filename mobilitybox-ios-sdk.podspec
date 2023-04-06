@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "mobilitybox-ios-sdk"
-  spec.version      = "3.1.1"
+  spec.version      = "3.2.0"
   spec.summary      = "Including public transport tickets in your iOS Apps."
   spec.description  = <<-DESC
 
