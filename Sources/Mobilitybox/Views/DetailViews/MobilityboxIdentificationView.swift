@@ -3,7 +3,7 @@ import SwiftUI
 import WebKit
 
 @available(iOS 14.0, *)
-struct IdentificationFormWebView: UIViewRepresentable {
+public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
     @Binding var coupon: MobilityboxCoupon
     var presentationMode: Binding<PresentationMode>
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
@@ -13,11 +13,20 @@ struct IdentificationFormWebView: UIViewRepresentable {
     @Binding var showActivationFailedAlert: Bool
     var couponActivationRunning = false
     
-    func makeCoordinator() -> IdentificationFormWebView.Coordinator {
+    public init(coupon: Binding<MobilityboxCoupon>, presentationMode: Binding<PresentationMode>, activateCouponCallback: @escaping (MobilityboxCoupon, MobilityboxTicketCode) -> Void, activationStartDateTime: Binding<Date>? = nil, showLoadingSpinner: Binding<Bool>, showActivationFailedAlert: Binding<Bool>) {
+        self._coupon = coupon
+        self.presentationMode = presentationMode
+        self.activateCouponCallback = activateCouponCallback
+        self.activationStartDateTime = activationStartDateTime
+        self._showLoadingSpinner = showLoadingSpinner
+        self._showActivationFailedAlert = showActivationFailedAlert
+    }
+    
+    public func makeCoordinator() -> MobilityboxIdentificationFormWebView.Coordinator {
         Coordinator(self)
     }
     
-    func makeUIView(context: Context) -> WKWebView {
+    public func makeUIView(context: Context) -> WKWebView {
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.websiteDataStore = WKWebsiteDataStore.default()
         webConfiguration.limitsNavigationsToAppBoundDomains = false
@@ -40,31 +49,31 @@ struct IdentificationFormWebView: UIViewRepresentable {
     }
     
     
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    public func updateUIView(_ uiView: WKWebView, context: Context) {}
     
-    func onLoadStatusChanged(perform: ((Bool, Error?) -> Void)?) -> some View {
+    public func onLoadStatusChanged(perform: ((Bool, Error?) -> Void)?) -> some View {
         var copy = self
         copy.loadStatusChanged = perform
         return copy
     }
     
-    mutating func setCouponActivateRunning(state: Bool) {
+    public mutating func setCouponActivateRunning(state: Bool) {
         self.couponActivationRunning = state
     }
     
     
-    class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
-        var parent: IdentificationFormWebView
+    public class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
+        var parent: MobilityboxIdentificationFormWebView
         
-        init(_ parent: IdentificationFormWebView) {
+        public init(_ parent: MobilityboxIdentificationFormWebView) {
             self.parent = parent
         }
         
-        func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
             parent.loadStatusChanged?(true, nil)
         }
         
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             if let json = try? JSONEncoder().encode(parent.coupon.product.identification_medium_schema) {
                 let theJSONText = String(data: json, encoding: .utf8)!
                 webView.evaluateJavaScript("window.renderIdentificationView(\(theJSONText))")
@@ -91,11 +100,11 @@ struct IdentificationFormWebView: UIViewRepresentable {
             parent.loadStatusChanged?(false, nil)
         }
         
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             parent.loadStatusChanged?(false, error)
         }
         
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             let url = navigationAction.request.url
             
             if url != nil && url?.absoluteString != "about:blank" {
@@ -107,7 +116,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
         }
         
         
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "activateCouponListener", let messageBody = message.body as? String {
                 print("activate")
                 if !self.parent.couponActivationRunning {
@@ -133,7 +142,7 @@ struct IdentificationFormWebView: UIViewRepresentable {
             }
         }
         
-        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        public func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
             print(message)
         }
     }
@@ -158,7 +167,7 @@ public struct MobilityboxIdentificationView: View {
     
     public var body: some View {
         ZStack {
-            IdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
+            MobilityboxIdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
                 .alert(isPresented: $showActivationFailedAlert) {
                     Alert(title: Text("Hinweis"), message: Text("Die Aktivierung des Tickets wurde wegen eines Fehlers abgebrochen. Bitte versuchen Sie es erneut."), dismissButton: .default(Text("OK")))
                 }
