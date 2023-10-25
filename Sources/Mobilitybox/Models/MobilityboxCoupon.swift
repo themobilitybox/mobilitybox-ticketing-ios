@@ -14,8 +14,10 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var subscription: MobilityboxSubscription?
     public var environment: String
     public var createdAt: Date? = Date()
+    public var tariff_settings_valid: Bool?
+    public var tariff_settings: [String: MobilityboxJSONValue]?
     
-    public init(id: String, original_coupon_id: String? = nil, restored_coupon_id: String? = nil, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil) {
+    public init(id: String, original_coupon_id: String? = nil, restored_coupon_id: String? = nil, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil, tariff_settings_valid: Bool? = nil, tariff_settings: [String: MobilityboxJSONValue]? = nil) {
         self.id = id
         self.original_coupon_id = original_coupon_id
         self.restored_coupon_id = restored_coupon_id
@@ -24,6 +26,8 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.activated = activated
         self.environment = environment
         self.createdAt = createdAt
+        self.tariff_settings_valid = tariff_settings_valid
+        self.tariff_settings = tariff_settings
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartDateTime: Date? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {

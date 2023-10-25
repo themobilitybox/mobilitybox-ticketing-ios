@@ -16,6 +16,7 @@ public struct MobilityboxProduct: Codable, Identifiable {
     public var area_id: String
     public var is_subscription: Bool
     public var identification_medium_schema: IdentificationMediumSchema
+    public var tariff_settings_schema: TariffSettingsSchema?
     
     public func getTitle() -> String {
         let customer_type_string = (customer_type == "adult" ? " Erwachsener" : ((customer_type == "child" ? " Kind" : "")))
