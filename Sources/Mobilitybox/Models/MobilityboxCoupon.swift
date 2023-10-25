@@ -68,9 +68,26 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Error with the activating coupon response, unexpected status code: \(String(describing: response))")
-                DispatchQueue.main.async {
-                    failure?(MobilityboxError.unkown)
+                
+                if let data = data {
+                    let errorResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    
+                    if errorResponse != nil && errorResponse!["message"] != nil && errorResponse!["message"] as! String == "The current subscription cycle was not ordered yet" {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.coupon_expired)
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.unkown)
+                        }
+                    }
+                    
+                } else {
+                    DispatchQueue.main.async {
+                        failure?(MobilityboxError.unkown)
+                    }
                 }
+
                 return
             }
             
