@@ -30,14 +30,26 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.tariff_settings = tariff_settings
     }
     
-    public func activate(identificationMedium: MobilityboxIdentificationMedium, activationStartDateTime: Date? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    public func activate(identificationMedium: MobilityboxIdentificationMedium, tariffSettings: MobilityboxTariffSettings? = nil, activationStartDateTime: Date? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         
-        var body = identificationMedium.getIdentificationMedium()?.dictionary
-        if body != nil {
+        var body: [String: MobilityboxJSONValue] = [:]
+        let identificationMediumData = identificationMedium.getIdentificationMedium()
+        
+        if identificationMediumData != nil && identificationMediumData!.dictionary != nil && identificationMediumData!.dictionary!["identification_medium"] != nil {
+            body["identification_medium"] = identificationMediumData!.dictionary!["identification_medium"]
+            
             if activationStartDateTime != nil && self.original_coupon_id == nil {
                 let activation_start_datetime = MobilityboxFormatter.isoDateTime.string(from: activationStartDateTime!)
-                body!["activation_start_datetime"] = MobilityboxJSONValue.string(activation_start_datetime)
+                body["activation_start_datetime"] = MobilityboxJSONValue.string(activation_start_datetime)
             }
+            
+            if tariffSettings != nil {
+                let tariffSettingsData = tariffSettings!.getTariffSettings()
+                if tariffSettingsData != nil && tariffSettingsData!.dictionary != nil && tariffSettingsData!.dictionary!["tariff_settings"] != nil {
+                    body["tariff_settings"] = tariffSettingsData!.dictionary!["tariff_settings"]
+                }
+            }
+            
             
             if let bodyJson = try? JSONEncoder().encode(body) {
                 activateCall(body: String(data: bodyJson, encoding: .utf8)!, onSuccess: completion, onFailure: failure)

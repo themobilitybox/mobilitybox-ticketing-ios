@@ -74,14 +74,23 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
         }
         
         public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            if let json = try? JSONEncoder().encode(parent.coupon.product.identification_medium_schema) {
-                let theJSONText = String(data: json, encoding: .utf8)!
-                webView.evaluateJavaScript("window.renderIdentificationView(\(theJSONText))")
+            let identificationMediumSchemaJson = try? JSONEncoder().encode(parent.coupon.product.identification_medium_schema)
+            let tariffSettingsSchemaJson = try? JSONEncoder().encode(parent.coupon.product.tariff_settings_schema)
+            
+            if identificationMediumSchemaJson != nil || tariffSettingsSchemaJson != nil {
+                let identificationMediumSchemaJsonString = identificationMediumSchemaJson != nil ? String(data: identificationMediumSchemaJson!, encoding: .utf8)! : "null"
+                let tariffSettingsSchemaJsonString = identificationMediumSchemaJson != nil ? String(data: tariffSettingsSchemaJson!, encoding: .utf8)! : "null"
+                
+                
+                
+                webView.evaluateJavaScript("window.renderIdentificationView(\(identificationMediumSchemaJsonString), \(tariffSettingsSchemaJsonString))")
                 
                 let activateSourceJs = """
                     document.getElementById('submit_activate_button').addEventListener('click', function(){
                         const identification_medium = window.getIdentificationMedium()
-                        window.webkit.messageHandlers.activateCouponListener.postMessage(identification_medium);
+                        const tariff_settings = window.getTariffSettings()
+                
+                        window.webkit.messageHandlers.activateCouponListener.postMessage(JSON.stringify({"identification_medium": identification_medium, "tariff_settings": tariff_settings}));
                     })
                 """
                 
@@ -117,21 +126,43 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
         
         
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if message.name == "activateCouponListener", let messageBody = message.body as? String {
+            if message.name == "activateCouponListener", let messageBodyString = message.body as? String {
                 print("activate")
                 if !self.parent.couponActivationRunning {
                     self.parent.showLoadingSpinner = true
                     self.parent.setCouponActivateRunning(state: true)
-                    let identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: messageBody)
-                    self.parent.coupon.activate(identificationMedium: identificationMedium, activationStartDateTime: self.parent.activationStartDateTime?.wrappedValue) { ticketCode in
-                        self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
-                        self.parent.presentationMode.wrappedValue.dismiss()
-                        self.parent.setCouponActivateRunning(state: false)
-                    } onFailure: { mobilityboxError in
-                        print("Identification View: failed to activate coupon")
-                        self.parent.setCouponActivateRunning(state: false)
-                        self.parent.showLoadingSpinner = false
-                        self.parent.showActivationFailedAlert = true
+                    let messageBody = try? JSONDecoder().decode(MobilityboxJSONValue.self, from: messageBodyString.data(using: .utf8)!)
+                    
+                    var identificationMedium: MobilityboxIdentificationMedium? = nil
+                    var tariffSettings: MobilityboxTariffSettings? = nil
+                    
+                    if let identificationMediumJson = messageBody?.dictionary?["identification_medium"] {
+                        if identificationMediumJson.string != nil {
+                            identificationMedium = MobilityboxIdentificationMedium(identification_medium_json: identificationMediumJson.string!)
+                        }
+                        
+                    }
+                        
+                    if let tariffSettingsJson = messageBody?.dictionary?["tariff_settings"] {
+                        if tariffSettingsJson.string != nil {
+                            tariffSettings = MobilityboxTariffSettings(tariff_settings_json: tariffSettingsJson.string!)
+                        }
+                    }
+                    
+                    
+                    if identificationMedium != nil {
+                        self.parent.coupon.activate(identificationMedium: identificationMedium!, tariffSettings: tariffSettings, activationStartDateTime: self.parent.activationStartDateTime?.wrappedValue) { ticketCode in
+                            self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
+                            self.parent.presentationMode.wrappedValue.dismiss()
+                            self.parent.setCouponActivateRunning(state: false)
+                        } onFailure: { mobilityboxError in
+                            print("Identification View: failed to activate coupon")
+                            self.parent.setCouponActivateRunning(state: false)
+                            self.parent.showLoadingSpinner = false
+                            self.parent.showActivationFailedAlert = true
+                        }
+                    } else if tariffSettings != nil {
+                        print("update Tariff Settings")
                     }
                 }
             }
