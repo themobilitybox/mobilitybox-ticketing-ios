@@ -60,20 +60,23 @@ struct MobilityboxFormatter {
     
     static let isoDateTime: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: "de")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         return formatter
     }()
     
     static let isoDate: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: "de")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
     
     static let timeInterval: DateComponentsFormatter = {
+        var calendar = Calendar.current
+        calendar.locale = Locale(identifier: "de")
         let formatter = DateComponentsFormatter()
+        formatter.calendar = calendar
         formatter.unitsStyle = .short
         formatter.zeroFormattingBehavior = .dropAll
         formatter.maximumUnitCount = 1
