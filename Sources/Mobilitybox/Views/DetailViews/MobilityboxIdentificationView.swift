@@ -88,7 +88,11 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
                 let activateSourceJs = """
                     document.getElementById('submit_activate_button').addEventListener('click', function(){
                         const identification_medium = window.getIdentificationMedium()
-                        const tariff_settings = window.getTariffSettings()
+                        var tariff_settings = null
+                
+                        if (window.getTariffSettings != undefined) {
+                            tariff_settings = window.getTariffSettings()
+                        }
                 
                         window.webkit.messageHandlers.activateCouponListener.postMessage(JSON.stringify({"identification_medium": identification_medium, "tariff_settings": tariff_settings}));
                     })
