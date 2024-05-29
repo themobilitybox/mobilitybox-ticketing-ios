@@ -39,7 +39,7 @@ public class MobilityboxAPI: Codable {
         if MobilityboxAPI.config != nil {
             self.apiURL = MobilityboxAPI.config!.apiURL
         } else {
-            self.apiURL = "https://api.themobilitybox.com/v4"
+            self.apiURL = "https://api.themobilitybox.com/v6"
         }
     }
 }
