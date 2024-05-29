@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PassKit
 
 public class MobilityboxTicket: Identifiable, Codable, Equatable {
     public static func == (lhs: MobilityboxTicket, rhs: MobilityboxTicket) -> Bool {
@@ -59,6 +60,60 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         }
     }
     
+    public func getPKPass(onSuccess completion: @escaping ((PKPass) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        self.getAvailableRenderingOptions { availableRenderingOptions in
+            if (availableRenderingOptions.contains("apple_wallet")) {
+                self.fetchPKPass(onSuccess: completion, onFailure: failure)
+            } else {
+                if (failure != nil) {
+                    failure!(.pkpass_not_possible)
+                }
+            }
+        } onFailure: { error in
+            if (failure != nil) {
+                failure!(.pkpass_not_possible)
+            }
+        }
+    }
+    
+    public func getAvailableRenderingOptions(onSuccess completion: @escaping (([String]) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        if (self.ticket.meta.available_rendering_options != nil) {
+            completion(self.ticket.meta.available_rendering_options!)
+        } else {
+            fetchvailableRenderingOptions(onSuccess: completion, onFailure: failure)
+        }
+    }
+    
+    func fetchvailableRenderingOptions(onSuccess completion: @escaping (([String]) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/tickets/\(self.id)/available_rendering_options.json")!
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+            if error != nil {
+                if (failure != nil) {
+                    failure!(.unkown)
+                }
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                if (failure != nil) {
+                    failure!(.unkown)
+                }
+                return
+            }
+            if let data = data {
+                let availableRenderingOptions = try! JSONDecoder().decode([String]?.self, from: data)
+                DispatchQueue.main.async {
+                    completion(availableRenderingOptions ?? [])
+                }
+            } else {
+                if (failure != nil) {
+                    failure!(.unkown)
+                }
+            }
+        })
+        task.resume()
+    }
+    
     func fetchCouponAndReactivate(onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         MobilityboxCouponCode(couponId: self.coupon_id).fetchCoupon { fetchedCoupon in
             if (fetchedCoupon.subscription != nil && fetchedCoupon.subscription!.coupon_reactivatable) {
@@ -82,6 +137,40 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
             DispatchQueue.main.async { failure?(mobilityboxError) }
         }
     }
+    
+    func fetchPKPass(onSuccess completion: @escaping ((PKPass) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/passes/apple_wallet/\(self.id).pkpass")!
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+            if error != nil {
+                if (failure != nil) {
+                    failure!(.pkpass_not_available)
+                }
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                if (failure != nil) {
+                    failure!(.pkpass_not_available)
+                }
+                return
+            }
+            
+            if let data = data {
+                let pkpass = try! PKPass(data: data)
+                DispatchQueue.main.async {
+                    completion(pkpass)
+                }
+            } else {
+                if (failure != nil) {
+                    failure!(.pkpass_not_available)
+                }
+            }
+        })
+        task.resume()
+    }
+    
+    
 }
 
 public enum MobilityboxTicketValidity {
@@ -97,4 +186,5 @@ public struct MobilityboxTicketMetaDetails: Codable {
     public let version: String?
     public let template: String
     public let requires_engine: String
+    public let available_rendering_options: [String]?
 }

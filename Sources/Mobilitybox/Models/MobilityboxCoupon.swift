@@ -152,7 +152,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         return "\(area.properties.city_name) - \(product.getTitle())"
     }
     
-    func getDescription() -> String {
+    public func getDescription() -> String {
         return "\(product.getDescription()) In der folgenden Tarifzone: \(area.properties.local_zone_name)"
     }
     
