@@ -80,11 +80,11 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         if (self.ticket.meta.available_rendering_options != nil) {
             completion(self.ticket.meta.available_rendering_options!)
         } else {
-            fetchvailableRenderingOptions(onSuccess: completion, onFailure: failure)
+            fetchAvailableRenderingOptions(onSuccess: completion, onFailure: failure)
         }
     }
     
-    func fetchvailableRenderingOptions(onSuccess completion: @escaping (([String]) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    func fetchAvailableRenderingOptions(onSuccess completion: @escaping (([String]) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         let url = URL(string: "\(Mobilitybox.api.apiURL)/ticketing/tickets/\(self.id)/available_rendering_options.json")!
         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
             if error != nil {
