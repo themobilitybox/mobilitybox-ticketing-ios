@@ -71,7 +71,7 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
             }
         } onFailure: { error in
             if (failure != nil) {
-                failure!(.pkpass_not_possible)
+                failure!(.pkpass_not_available)
             }
         }
     }
