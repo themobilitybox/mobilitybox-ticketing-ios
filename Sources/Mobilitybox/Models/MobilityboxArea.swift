@@ -27,4 +27,6 @@ public struct MobilityboxTicketArea: Codable {
 public struct MobilityboxTicketAreaProperties: Codable {
     public let city_name: String
     public let local_zone_name: String
+    public let relation_number: String?
+    public let price_level: String?
 }
