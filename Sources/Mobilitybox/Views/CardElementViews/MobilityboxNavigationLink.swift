@@ -13,24 +13,19 @@ public struct MobilityboxNavigationLink<OriginContent: View, DestinationContent:
     let linkType: MobilityboxNavigationLinkType
     @ViewBuilder var navigationOrigin: () -> OriginContent
     @ViewBuilder var navigationDestination: () -> DestinationContent
-    @State var showDestinationView = false
-    
-    var navigationLinkContent: AnyView
+    @State var defaultShowDestinationView: Bool = false
+    var showDestinationView: Binding<Bool>? = nil
 
     public init(linkType: MobilityboxNavigationLinkType = .push, showDestinationView: Binding<Bool>? = nil, @ViewBuilder navigationOrigin: @escaping () -> OriginContent, @ViewBuilder navigationDestination: @escaping () -> DestinationContent) {
         self.linkType = linkType
         self.navigationOrigin = navigationOrigin
         self.navigationDestination = navigationDestination
-        
-        if let showDestinationView = showDestinationView {
-            self.navigationLinkContent = AnyView(MobilityboxNavigationLinkInner(linkType: linkType, showDestinationView: showDestinationView, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination))
-        } else {
-            self.navigationLinkContent = AnyView(IndependentMobilityboxNavigationLink(linkType: linkType, navigationOrigin: navigationOrigin, navigationDestination: navigationDestination))
-        }
+        self.showDestinationView = showDestinationView
     }
 
     public var body: some View {
-        navigationLinkContent
+        let resolvedBindingShowDestinationView = showDestinationView ?? $defaultShowDestinationView
+        return MobilityboxNavigationLinkInner(linkType: self.linkType, showDestinationView: resolvedBindingShowDestinationView, navigationOrigin: self.navigationOrigin, navigationDestination: self.navigationDestination)
     }
 
     public struct DependentMobilityboxNavigationLink: View {
@@ -83,7 +78,7 @@ public struct MobilityboxNavigationLinkInner<OriginContent: View, DestinationCon
                 }
         } else if linkType.type == "listPush" {
             ZStack(alignment: .leading) {
-                NavigationLink {
+                NavigationLink(isActive: $showDestinationView) {
                     navigationDestination()
                 } label: {
                     EmptyView()
@@ -93,7 +88,7 @@ public struct MobilityboxNavigationLinkInner<OriginContent: View, DestinationCon
                 navigationOrigin()
             }
         } else {
-            NavigationLink {
+            NavigationLink(isActive: $showDestinationView) {
                 navigationDestination()
             } label: {
                 navigationOrigin()
