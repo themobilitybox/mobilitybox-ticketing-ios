@@ -12,7 +12,7 @@ public struct MobilityboxTicketView: View {
     
     public var body: some View {
         HStack(spacing: 0) {
-            LeftCardView(title: ticket.getTitle(), addedAgoText: ticket.getAddedAgoText(), environment: ticket.environment) {
+            LeftCardView(title: ticket.getTitle(), addedAgoText: ticket.getAddedAgoText(), referenceTag: ticket.getReferenceTag(), environment: ticket.environment) {
                 HStack(alignment: .center) {
                     switch ticket.validity() {
                     case .valid:

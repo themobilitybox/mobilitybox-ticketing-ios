@@ -4,34 +4,42 @@ import SwiftUI
 struct LeftCardView<Content: View>: View {
     var title: String
     var addedAgoText: String?
+    var referenceTag: String?
     var environment: String
     @ViewBuilder var content: () -> Content
     
-    public init(title: String, addedAgoText: String? = nil, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
+    public init(title: String, addedAgoText: String? = nil, referenceTag: String? = nil, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
         self.title = title
         self.addedAgoText = addedAgoText
         self.content = content
         self.environment = environment
+        self.referenceTag = referenceTag
     }
     
     var body: some View {
         ZStack(alignment: .topLeading) {
             HStack {
                 Spacer()
-                VStack(alignment: .center, spacing: 5) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(title).font(.system(size: 16, design: .rounded).bold())
                     content()
                     if (addedAgoText != nil) {
                         HStack {
+                            if (self.referenceTag != nil && self.referenceTag != "") {
+                                Text("\(self.referenceTag ?? "")")
+                                    .font(.system(size: 9))
+                                    .italic()
+                                    .foregroundColor(Color(UIColor.gray))
+                            }
                             Spacer()
                             Text("hinzugefügt vor: \(addedAgoText ?? "")")
                                 .font(.system(size: 9))
                                 .italic()
                                 .foregroundColor(Color(UIColor.gray))
-                        }.padding(.horizontal, 5)
+                        }
                     }
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 15)
                 Spacer()
             }
             .frame(height: 100)

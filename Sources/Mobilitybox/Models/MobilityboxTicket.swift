@@ -28,7 +28,7 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     var wasReactivated: Bool? = false
     
     public func getTitle() -> String {
-        return "\(area.properties.city_name) - \(product.getTitle())"
+        return product.local_ticket_name
     }
     
     public func validity() -> MobilityboxTicketValidity {
@@ -50,6 +50,16 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         let delta = currentDate - self.createdAt!
         
         return MobilityboxFormatter.timeInterval.string(from: delta)!
+    }
+    
+    public func getReferenceTag() -> String? {
+        if UUID(uuidString: self.id.replacingOccurrences(of: "mobilitybox-ticket-", with: "")) != nil {
+            return "T-\(self.id.suffix(6).uppercased())"
+        } else if UUID(uuidString: self.id.replacingOccurrences(of: "mobilitybox-ticket-", with: "").replacingOccurrences(of: #"\b-[^-]+$\b"#, with: "", options: .regularExpression)) != nil {
+            return "T-\(self.id.replacingOccurrences(of: "mobilitybox-ticket-", with: "").replacingOccurrences(of: #"\b-[^-]+$\b"#, with: "", options: .regularExpression).suffix(6).uppercased())"
+        } else {
+            return nil
+        }
     }
     
     public func reactivate(onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {

@@ -149,7 +149,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     }
     
     public func getTitle() -> String {
-        return "\(area.properties.city_name) - \(product.getTitle())"
+        return product.local_ticket_name
     }
     
     public func getDescription() -> String {
@@ -165,6 +165,10 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         let delta = currentDate - self.createdAt!
         
         return MobilityboxFormatter.timeInterval.string(from: delta)!
+    }
+    
+    public func getReferenceTag() -> String? {
+        return "C-\(self.id.suffix(6).uppercased())"
     }
 }
 
