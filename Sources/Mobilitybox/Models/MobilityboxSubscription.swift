@@ -25,6 +25,7 @@ public struct MobilityboxSubscription: Codable, Identifiable {
 
 public struct MobilityboxSubscriptionCycle: Codable, Identifiable {
     public var id: String
+    public var product_id: String?
     public var valid_from: String?
     public var valid_until: String?
     public var ordered: Bool
