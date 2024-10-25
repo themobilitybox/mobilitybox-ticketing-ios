@@ -1,23 +1,27 @@
 import Foundation
 import SwiftUI
-import WebKit
+@preconcurrency import WebKit
 
 @available(iOS 14.0, *)
 public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
     @Binding var coupon: MobilityboxCoupon
+    @Binding var product: MobilityboxProduct
     var presentationMode: Binding<PresentationMode>
     var loadStatusChanged: ((Bool, Error?) -> Void)? = nil
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     var activationStartDateTime: Binding<Date>? = nil
+    var ticket: Binding<MobilityboxTicket>? = nil
     @Binding var showLoadingSpinner: Bool
     @Binding var showActivationFailedAlert: Bool
     var couponActivationRunning = false
     
-    public init(coupon: Binding<MobilityboxCoupon>, presentationMode: Binding<PresentationMode>, activateCouponCallback: @escaping (MobilityboxCoupon, MobilityboxTicketCode) -> Void, activationStartDateTime: Binding<Date>? = nil, showLoadingSpinner: Binding<Bool>, showActivationFailedAlert: Binding<Bool>) {
+    public init(coupon: Binding<MobilityboxCoupon>, product: Binding<MobilityboxProduct>? = nil, presentationMode: Binding<PresentationMode>, activateCouponCallback: @escaping (MobilityboxCoupon, MobilityboxTicketCode) -> Void, activationStartDateTime: Binding<Date>? = nil, ticket: Binding<MobilityboxTicket>? = nil, showLoadingSpinner: Binding<Bool>, showActivationFailedAlert: Binding<Bool>) {
         self._coupon = coupon
+        self._product = product ?? coupon.product
         self.presentationMode = presentationMode
         self.activateCouponCallback = activateCouponCallback
         self.activationStartDateTime = activationStartDateTime
+        self.ticket = ticket
         self._showLoadingSpinner = showLoadingSpinner
         self._showActivationFailedAlert = showActivationFailedAlert
     }
@@ -74,16 +78,22 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
         }
         
         public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            let identificationMediumSchemaJson = try? JSONEncoder().encode(parent.coupon.product.identification_medium_schema)
-            let tariffSettingsSchemaJson = try? JSONEncoder().encode(parent.coupon.product.tariff_settings_schema)
+            let identificationMediumSchemaJson = try? JSONEncoder().encode(parent.product.identification_medium_schema)
+            let tariffSettingsSchemaJson = try? JSONEncoder().encode(parent.product.tariff_settings_schema)
             
             if identificationMediumSchemaJson != nil || tariffSettingsSchemaJson != nil {
                 let identificationMediumSchemaJsonString = identificationMediumSchemaJson != nil ? String(data: identificationMediumSchemaJson!, encoding: .utf8)! : "null"
-                let tariffSettingsSchemaJsonString = identificationMediumSchemaJson != nil ? String(data: tariffSettingsSchemaJson!, encoding: .utf8)! : "null"
+                let tariffSettingsSchemaJsonString = tariffSettingsSchemaJson != nil ? String(data: tariffSettingsSchemaJson!, encoding: .utf8)! : "null"
+                var identificationMediumJsonString = "null"
+                if (parent.ticket != nil) {
+                    if let properties = parent.ticket?.wrappedValue.ticket.properties {
+                        let identificationMediumJson = try? JSONEncoder().encode(properties.dictionary?["identification_medium"])
+                        identificationMediumJsonString = identificationMediumJson != nil ? String(data: identificationMediumJson!, encoding: .utf8)! : "null"
+                    }
+                }
                 
-                
-                
-                webView.evaluateJavaScript("window.renderIdentificationView(\(identificationMediumSchemaJsonString), \(tariffSettingsSchemaJsonString))")
+                webView.evaluateJavaScript("window.renderIdentificationView(\(identificationMediumSchemaJsonString), \(tariffSettingsSchemaJsonString), \(identificationMediumJsonString))")
+     
                 
                 let activateSourceJs = """
                     document.getElementById('submit_activate_button').addEventListener('click', function(){
@@ -112,6 +122,7 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
             
             parent.loadStatusChanged?(false, nil)
         }
+        
         
         public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             parent.loadStatusChanged?(false, error)
@@ -155,18 +166,34 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
                     
                     
                     if identificationMedium != nil {
-                        self.parent.coupon.activate(identificationMedium: identificationMedium!, tariffSettings: tariffSettings, activationStartDateTime: self.parent.activationStartDateTime?.wrappedValue) { ticketCode in
-                            self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
-                            self.parent.presentationMode.wrappedValue.dismiss()
-                            self.parent.setCouponActivateRunning(state: false)
-                        } onFailure: { mobilityboxError in
-                            print("Identification View: failed to activate coupon")
-                            self.parent.setCouponActivateRunning(state: false)
-                            self.parent.showLoadingSpinner = false
-                            self.parent.showActivationFailedAlert = true
+                        if (self.parent.ticket?.coupon_reactivation_key != nil) {
+                            self.parent.coupon.reactivate(reactivation_key: self.parent.ticket!.wrappedValue.coupon_reactivation_key!, identificationMedium: identificationMedium, tariffSettings: tariffSettings) { ticketCode in
+                                self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
+                                self.parent.presentationMode.wrappedValue.dismiss()
+                                self.parent.setCouponActivateRunning(state: false)
+                            } onFailure: { mobilityboxError in
+                                print("Identification View: failed to activate coupon")
+                                self.parent.setCouponActivateRunning(state: false)
+                                self.parent.showLoadingSpinner = false
+                                self.parent.showActivationFailedAlert = true
+                            }
+                        } else {
+                            self.parent.coupon.activate(identificationMedium: identificationMedium!, tariffSettings: tariffSettings, activationStartDateTime: self.parent.activationStartDateTime?.wrappedValue) { ticketCode in
+                                self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
+                                self.parent.presentationMode.wrappedValue.dismiss()
+                                self.parent.setCouponActivateRunning(state: false)
+                            } onFailure: { mobilityboxError in
+                                print("Identification View: failed to activate coupon")
+                                self.parent.setCouponActivateRunning(state: false)
+                                self.parent.showLoadingSpinner = false
+                                self.parent.showActivationFailedAlert = true
+                            }
                         }
                     } else if tariffSettings != nil {
                         print("update Tariff Settings")
+                    } else {
+                        self.parent.setCouponActivateRunning(state: false)
+                        self.parent.showLoadingSpinner = false
                     }
                 }
             }
@@ -187,30 +214,57 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
 @available(iOS 14.0, *)
 public struct MobilityboxIdentificationView: View {
     @Binding var coupon: MobilityboxCoupon
+    @State var product: MobilityboxProduct
+    @State var dataIsReady: Bool = false
     var activationStartDateTime: Binding<Date>?
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     @State var showLoadingSpinner: Bool = false
     @State var showActivationFailedAlert: Bool = false
+    var ticket: Binding<MobilityboxTicket>?
     
-    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartDateTime: Binding<Date>? = nil) {
+    public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartDateTime: Binding<Date>? = nil, ticket: Binding<MobilityboxTicket>? = nil) {
         self._coupon = coupon
+        self.product = coupon.product.wrappedValue
         self.activateCouponCallback = activateCouponCallback
         self.activationStartDateTime = activationStartDateTime
+        self.ticket = ticket
     }
     
     
     public var body: some View {
         ZStack {
-            MobilityboxIdentificationFormWebView(coupon: $coupon, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
-                .alert(isPresented: $showActivationFailedAlert) {
-                    Alert(title: Text("Hinweis"), message: Text("Die Aktivierung des Tickets wurde wegen eines Fehlers abgebrochen. Bitte versuchen Sie es erneut."), dismissButton: .default(Text("OK")))
+            if (self.dataIsReady) {
+                MobilityboxIdentificationFormWebView(coupon: $coupon, product: $product, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, ticket: ticket, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
+                    .alert(isPresented: $showActivationFailedAlert) {
+                        Alert(title: Text("Hinweis"), message: Text("Die Aktivierung des Tickets wurde wegen einem Fehler abgebrochen. Bitte versuchen Sie es erneut."), dismissButton: .default(Text("OK")))
+                    }
+                if showLoadingSpinner {
+                    ZStack {
+                        Color.white.opacity(0.5).edgesIgnoringSafeArea(.all)
+                        ProgressView()
+                    }
                 }
-            if showLoadingSpinner {
-                ZStack {
-                    Color.white.opacity(0.5).edgesIgnoringSafeArea(.all)
-                    ProgressView()
+            } else {
+                ProgressView()
+            }
+        }.onAppear {
+            if (ticket != nil) {
+                if let cycle = coupon.subscription?.subscription_cycles?.first(where: { cycle in
+                    return cycle.ordered && !cycle.coupon_activated && cycle.product_id != nil
+                }) {
+                    MobilityboxProductCode(productId: cycle.product_id!).fetchProduct { fetchedProduct in
+                        self.product = fetchedProduct
+                        self.dataIsReady = true
+                    } onFailure: { error in
+                        // TODO: handle error
+                    }
+
+                } else {
+                    // TODO: handle not found cycle
                 }
+            } else {
+                self.dataIsReady = true
             }
         }
     }
