@@ -62,9 +62,9 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         }
     }
     
-    public func reactivate(onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    public func reactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         if self.product.is_subscription && self.coupon_reactivation_key != nil && !self.wasReactivated! {
-            self.fetchCouponAndReactivate(onSuccess: completion, onFailure: failure)
+            self.fetchCouponAndReactivate(identificationMedium: identificationMedium, tariffSettings: tariffSettings, onSuccess: completion, onFailure: failure)
         } else {
             DispatchQueue.main.async { failure?(.not_reactivatable) }
         }
@@ -124,10 +124,10 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         task.resume()
     }
     
-    func fetchCouponAndReactivate(onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    func fetchCouponAndReactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         MobilityboxCouponCode(couponId: self.coupon_id).fetchCoupon { fetchedCoupon in
             if (fetchedCoupon.subscription != nil && fetchedCoupon.subscription!.coupon_reactivatable) {
-                self.reactivateFetchedCoupon(fetchedCoupon: fetchedCoupon, onSuccess: completion, onFailure: failure)
+                self.reactivateFetchedCoupon(fetchedCoupon: fetchedCoupon, identificationMedium: identificationMedium, tariffSettings: tariffSettings, onSuccess: completion, onFailure: failure)
             } else {
                 DispatchQueue.main.async { failure?(.not_reactivatable) }
             }
@@ -136,8 +136,8 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         }
     }
     
-    func reactivateFetchedCoupon(fetchedCoupon: MobilityboxCoupon, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
-        fetchedCoupon.reactivate(reactivation_key: self.coupon_reactivation_key!) { fetchedTicketCode in
+    func reactivateFetchedCoupon(fetchedCoupon: MobilityboxCoupon, identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        fetchedCoupon.reactivate(reactivation_key: self.coupon_reactivation_key!, identificationMedium: identificationMedium, tariffSettings: tariffSettings) { fetchedTicketCode in
             print("Reactivated Ticket id: \(fetchedTicketCode.ticketId)")
             DispatchQueue.main.async {
                 completion(fetchedTicketCode)

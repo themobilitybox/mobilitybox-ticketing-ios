@@ -61,8 +61,33 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         }
     }
     
-    public func reactivate(reactivation_key: String, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
-        let body: [String: String] = ["reactivation_key": reactivation_key]
+    public func reactivate(reactivation_key: String, identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+        var body: [String: MobilityboxJSONValue] = [:]
+        
+        if let decodedData = try? JSONDecoder().decode(MobilityboxJSONValue.self, from: "\"\(reactivation_key)\"".data(using: .utf8)!) {
+            body["reactivation_key"] = decodedData
+        } else {
+            body["reactivation_key"] = nil
+        }
+        
+        
+        if (identificationMedium != nil) {
+            let identificationMediumData = identificationMedium!.getIdentificationMedium()
+            
+            if identificationMediumData != nil && identificationMediumData!.dictionary != nil && identificationMediumData!.dictionary!["identification_medium"] != nil {
+                body["identification_medium"] = identificationMediumData!.dictionary!["identification_medium"]
+            }
+        }
+                    
+                    
+        if (tariffSettings != nil) {
+            let tariffSettingsData = tariffSettings!.getTariffSettings()
+            if tariffSettingsData != nil && tariffSettingsData!.dictionary != nil && tariffSettingsData!.dictionary!["tariff_settings"] != nil {
+                body["tariff_settings"] = tariffSettingsData!.dictionary!["tariff_settings"]
+            }
+        }
+                    
+        
         if let bodyJson = try? JSONEncoder().encode(body) {
             activateCall(body: String(data: bodyJson, encoding: .utf8)!, onSuccess: completion, onFailure: failure)
         }
@@ -95,6 +120,14 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                     if errorResponse != nil && errorResponse!["message"] != nil && errorResponse!["message"] as! String == "The current subscription cycle was not ordered yet" {
                         DispatchQueue.main.async {
                             failure?(MobilityboxError.coupon_expired)
+                        }
+                    } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("identification_medium:") {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.identification_medium_not_valid)
+                        }
+                    } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("tariff_settings:") {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.tariff_settings_not_valid)
                         }
                     } else {
                         DispatchQueue.main.async {
