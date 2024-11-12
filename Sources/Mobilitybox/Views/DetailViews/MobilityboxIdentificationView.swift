@@ -13,9 +13,10 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
     var ticket: Binding<MobilityboxTicket>? = nil
     @Binding var showLoadingSpinner: Bool
     @Binding var showActivationFailedAlert: Bool
+    @Binding var activationFailedError: MobilityboxError
     var couponActivationRunning = false
     
-    public init(coupon: Binding<MobilityboxCoupon>, product: Binding<MobilityboxProduct>? = nil, presentationMode: Binding<PresentationMode>, activateCouponCallback: @escaping (MobilityboxCoupon, MobilityboxTicketCode) -> Void, activationStartDateTime: Binding<Date>? = nil, ticket: Binding<MobilityboxTicket>? = nil, showLoadingSpinner: Binding<Bool>, showActivationFailedAlert: Binding<Bool>) {
+    public init(coupon: Binding<MobilityboxCoupon>, product: Binding<MobilityboxProduct>? = nil, presentationMode: Binding<PresentationMode>, activateCouponCallback: @escaping (MobilityboxCoupon, MobilityboxTicketCode) -> Void, activationStartDateTime: Binding<Date>? = nil, ticket: Binding<MobilityboxTicket>? = nil, showLoadingSpinner: Binding<Bool>, showActivationFailedAlert: Binding<Bool>, activationFailedError: Binding<MobilityboxError>) {
         self._coupon = coupon
         self._product = product ?? coupon.product
         self.presentationMode = presentationMode
@@ -24,6 +25,7 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
         self.ticket = ticket
         self._showLoadingSpinner = showLoadingSpinner
         self._showActivationFailedAlert = showActivationFailedAlert
+        self._activationFailedError = activationFailedError
     }
     
     public func makeCoordinator() -> MobilityboxIdentificationFormWebView.Coordinator {
@@ -175,6 +177,7 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
                                 print("Identification View: failed to activate coupon")
                                 self.parent.setCouponActivateRunning(state: false)
                                 self.parent.showLoadingSpinner = false
+                                self.parent.activationFailedError = mobilityboxError ?? .unkown
                                 self.parent.showActivationFailedAlert = true
                             }
                         } else {
@@ -186,6 +189,7 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
                                 print("Identification View: failed to activate coupon")
                                 self.parent.setCouponActivateRunning(state: false)
                                 self.parent.showLoadingSpinner = false
+                                self.parent.activationFailedError = mobilityboxError ?? .unkown
                                 self.parent.showActivationFailedAlert = true
                             }
                         }
@@ -221,6 +225,7 @@ public struct MobilityboxIdentificationView: View {
     var activateCouponCallback: ((MobilityboxCoupon, MobilityboxTicketCode) -> Void)
     @State var showLoadingSpinner: Bool = false
     @State var showActivationFailedAlert: Bool = false
+    @State var activationFailedError: MobilityboxError = .unkown
     var ticket: Binding<MobilityboxTicket>?
     
     public init(coupon: Binding<MobilityboxCoupon>, activateCouponCallback: @escaping ((MobilityboxCoupon, MobilityboxTicketCode) -> Void), activationStartDateTime: Binding<Date>? = nil, ticket: Binding<MobilityboxTicket>? = nil) {
@@ -231,13 +236,32 @@ public struct MobilityboxIdentificationView: View {
         self.ticket = ticket
     }
     
+    func activationAlertText() -> String {
+        return switch self.activationFailedError {
+        case .before_earliest_activation_start_datetime:
+            if self.coupon.earliest_activation_start_datetime != nil {
+                "Das Ticket ist erst ab dem \(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: self.coupon.earliest_activation_start_datetime!)!)) Uhr nutzbar."
+            } else {
+                "Das Ticket ist erst ab nächsten Monat nutzbar."
+            }
+        case .coupon_activation_expired:
+            if self.coupon.earliest_activation_start_datetime != nil {
+                "Das Ticket war nur noch bis zum \(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: self.coupon.earliest_activation_start_datetime!)!)) Uhr nutzbar."
+            } else {
+                "Das Ticket kann nicht mehr benutzt werden."
+            }
+        default:
+            "Die Aktivierung des Tickets konnte aufgrund eines Fehlers nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
+        }
+    }
+    
     
     public var body: some View {
         ZStack {
             if (self.dataIsReady) {
-                MobilityboxIdentificationFormWebView(coupon: $coupon, product: $product, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, ticket: ticket, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert)
+                MobilityboxIdentificationFormWebView(coupon: $coupon, product: $product, presentationMode: presentationMode, activateCouponCallback: activateCouponCallback, activationStartDateTime: activationStartDateTime, ticket: ticket, showLoadingSpinner: $showLoadingSpinner, showActivationFailedAlert: $showActivationFailedAlert, activationFailedError: $activationFailedError)
                     .alert(isPresented: $showActivationFailedAlert) {
-                        Alert(title: Text("Hinweis"), message: Text("Die Aktivierung des Tickets wurde wegen einem Fehler abgebrochen. Bitte versuchen Sie es erneut."), dismissButton: .default(Text("OK")))
+                        Alert(title: Text("Hinweis"), message: Text(self.activationAlertText()), dismissButton: .default(Text("OK")))
                     }
                 if showLoadingSpinner {
                     ZStack {

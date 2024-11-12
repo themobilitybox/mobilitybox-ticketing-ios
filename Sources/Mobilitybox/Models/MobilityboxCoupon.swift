@@ -129,6 +129,14 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                         DispatchQueue.main.async {
                             failure?(MobilityboxError.tariff_settings_not_valid)
                         }
+                    } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("Ticket cannot be activated yet") {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.before_earliest_activation_start_datetime)
+                        }
+                    } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("Ticket cannot be activated anymore") {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.coupon_activation_expired)
+                        }
                     } else {
                         DispatchQueue.main.async {
                             failure?(MobilityboxError.unkown)
