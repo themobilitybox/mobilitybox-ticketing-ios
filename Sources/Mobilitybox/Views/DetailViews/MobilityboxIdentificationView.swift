@@ -274,7 +274,7 @@ public struct MobilityboxIdentificationView: View {
             }
         }.onAppear {
             if (ticket != nil) {
-                if let cycle = coupon.subscription?.subscription_cycles?.first(where: { cycle in
+                if let cycle = coupon.subscription?.subscription_cycles?.reversed().first(where: { cycle in
                     return cycle.ordered && !cycle.coupon_activated && cycle.product_id != nil
                 }) {
                     MobilityboxProductCode(productId: cycle.product_id!).fetchProduct { fetchedProduct in
