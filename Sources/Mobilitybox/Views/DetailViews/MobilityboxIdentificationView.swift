@@ -33,6 +33,8 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
     }
     
     public func makeUIView(context: Context) -> WKWebView {
+        context.coordinator.checkToInstantlyActivateCoupon()
+           
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.websiteDataStore = WKWebsiteDataStore.default()
         webConfiguration.limitsNavigationsToAppBoundDomains = false
@@ -67,12 +69,33 @@ public struct MobilityboxIdentificationFormWebView: UIViewRepresentable {
         self.couponActivationRunning = state
     }
     
-    
     public class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: MobilityboxIdentificationFormWebView
         
         public init(_ parent: MobilityboxIdentificationFormWebView) {
             self.parent = parent
+        }
+        
+        public func checkToInstantlyActivateCoupon() {
+            if (self.parent.coupon.isRestoredCoupon()) {
+                DispatchQueue.main.async {
+                    self.parent.showLoadingSpinner = true
+                    self.parent.setCouponActivateRunning(state: true)
+                }
+                
+                self.parent.coupon.activateCall(body: "{}") { ticketCode in
+                    DispatchQueue.main.async {
+                        self.parent.activateCouponCallback(self.parent.coupon, ticketCode)
+                        self.parent.presentationMode.wrappedValue.dismiss()
+                        self.parent.setCouponActivateRunning(state: false)
+                    }
+                } onFailure: { mobilityboxError in
+                    DispatchQueue.main.async {
+                        self.parent.setCouponActivateRunning(state: false)
+                        self.parent.showLoadingSpinner = false
+                    }
+                }
+            }
         }
         
         public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
@@ -255,6 +278,28 @@ public struct MobilityboxIdentificationView: View {
         }
     }
     
+    func checkToFetchNewProduct() {
+        if (ticket != nil) {
+            if let cycle = coupon.subscription?.subscription_cycles?.reversed().first(where: { cycle in
+                return cycle.ordered && !cycle.coupon_activated && cycle.product_id != nil
+            }) {
+                MobilityboxProductCode(productId: cycle.product_id!).fetchProduct { fetchedProduct in
+                    self.product = fetchedProduct
+                    self.dataIsReady = true
+                } onFailure: { error in
+                    // TODO: handle error
+                    self.dataIsReady = true
+                }
+
+            } else {
+                // TODO: handle not found cycle
+                self.dataIsReady = true
+            }
+        } else {
+            self.dataIsReady = true
+        }
+    }
+    
     
     public var body: some View {
         ZStack {
@@ -273,23 +318,7 @@ public struct MobilityboxIdentificationView: View {
                 ProgressView()
             }
         }.onAppear {
-            if (ticket != nil) {
-                if let cycle = coupon.subscription?.subscription_cycles?.reversed().first(where: { cycle in
-                    return cycle.ordered && !cycle.coupon_activated && cycle.product_id != nil
-                }) {
-                    MobilityboxProductCode(productId: cycle.product_id!).fetchProduct { fetchedProduct in
-                        self.product = fetchedProduct
-                        self.dataIsReady = true
-                    } onFailure: { error in
-                        // TODO: handle error
-                    }
-
-                } else {
-                    // TODO: handle not found cycle
-                }
-            } else {
-                self.dataIsReady = true
-            }
+            self.checkToFetchNewProduct()
         }
     }
 }

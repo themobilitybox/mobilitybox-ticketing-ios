@@ -201,6 +201,10 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         return "\(product.getDescription()) In der folgenden Tarifzone: \(area.properties.local_zone_name)"
     }
     
+    public func isRestoredCoupon() -> Bool {
+        return self.original_coupon_id != nil
+    }
+    
     func getAddedAgoText() -> String? {
         if (self.createdAt == nil) {
             return nil
