@@ -268,8 +268,8 @@ public struct MobilityboxIdentificationView: View {
                 "Das Ticket ist erst ab nächsten Monat nutzbar."
             }
         case .coupon_activation_expired:
-            if self.coupon.earliest_activation_start_datetime != nil {
-                "Das Ticket war nur noch bis zum \(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: self.coupon.earliest_activation_start_datetime!)!)) Uhr nutzbar."
+            if self.coupon.latest_activation_start_datetime != nil {
+                "Das Ticket war nur noch bis zum \(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: self.coupon.latest_activation_start_datetime!)!)) Uhr nutzbar."
             } else {
                 "Das Ticket kann nicht mehr benutzt werden."
             }
