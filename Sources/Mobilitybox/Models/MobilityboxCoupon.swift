@@ -18,8 +18,9 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
     public var tariff_settings: [String: MobilityboxJSONValue]?
     public var earliest_activation_start_datetime: String?
     public var latest_activation_start_datetime: String?
+    public var activatable_until: String?
     
-    public init(id: String, original_coupon_id: String? = nil, restored_coupon_id: String? = nil, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil, tariff_settings_valid: Bool? = nil, tariff_settings: [String: MobilityboxJSONValue]? = nil, earliest_activation_start_datetime: String? = nil, latest_activation_start_datetime: String? = nil) {
+    public init(id: String, original_coupon_id: String? = nil, restored_coupon_id: String? = nil, product: MobilityboxProduct, area: MobilityboxArea, activated: Bool = false, environment: String, createdAt: Date? = nil, tariff_settings_valid: Bool? = nil, tariff_settings: [String: MobilityboxJSONValue]? = nil, earliest_activation_start_datetime: String? = nil, latest_activation_start_datetime: String? = nil, activatable_until: String? = nil) {
         self.id = id
         self.original_coupon_id = original_coupon_id
         self.restored_coupon_id = restored_coupon_id
@@ -32,6 +33,7 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
         self.tariff_settings = tariff_settings
         self.earliest_activation_start_datetime = earliest_activation_start_datetime
         self.latest_activation_start_datetime = latest_activation_start_datetime
+        self.activatable_until = activatable_until
     }
     
     public func activate(identificationMedium: MobilityboxIdentificationMedium, tariffSettings: MobilityboxTariffSettings? = nil, activationStartDateTime: Date? = nil, onSuccess completion: @escaping (MobilityboxTicketCode) -> (), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
