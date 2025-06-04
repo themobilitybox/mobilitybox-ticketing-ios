@@ -3,13 +3,15 @@ import SwiftUI
 @available(iOS 14.0, *)
 struct LeftCardView<Content: View>: View {
     var title: String
+    var details: String?
     var addedAgoText: String?
     var referenceTag: String?
     var environment: String
     @ViewBuilder var content: () -> Content
     
-    public init(title: String, addedAgoText: String? = nil, referenceTag: String? = nil, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
+    public init(title: String, details: String? = nil, addedAgoText: String? = nil, referenceTag: String? = nil, environment: String = "live", @ViewBuilder content: @escaping (() -> Content)) {
         self.title = title
+        self.details = details
         self.addedAgoText = addedAgoText
         self.content = content
         self.environment = environment
@@ -21,7 +23,12 @@ struct LeftCardView<Content: View>: View {
             HStack {
                 Spacer()
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(title).font(.system(size: 16, design: .rounded).bold())
+                    VStack(alignment: .leading) {
+                        Text(title).font(.system(size: 16, design: .rounded).bold())
+                        if (details != nil) {
+                            Text(details ?? "").font(.system(size: 12, design: .rounded).bold()).padding(0)
+                        }
+                    }
                     content()
                     if (addedAgoText != nil) {
                         HStack {
