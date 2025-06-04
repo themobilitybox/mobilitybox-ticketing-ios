@@ -63,6 +63,26 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     }
     
     public func reactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    public func getPassengerName() -> String? {
+        let identificationMediumJson = self.ticket.properties?.dictionary?["identification_medium"]?.dictionary
+        let photoIdKeys = ["photo_id", "photo_id_lite", "photo_id_name_only"]
+        
+        var photoId: MobilityboxJSONValue?
+
+        for key in photoIdKeys {
+            if let value = identificationMediumJson?[key] {
+                photoId = value
+                break
+            }
+        }
+        
+        if photoId != nil {
+            let passengerName = "\(photoId?.dictionary?["first_name"]?.string ?? "") \(photoId?.dictionary?["last_name"]?.string ?? "")".trimmingCharacters(in: .whitespacesAndNewlines)
+            return passengerName.isEmpty ? nil : passengerName
+        } else {
+            return nil
+        }
+    }
         if self.product.is_subscription && self.coupon_reactivation_key != nil && !self.wasReactivated! {
             self.fetchCouponAndReactivate(identificationMedium: identificationMedium, tariffSettings: tariffSettings, onSuccess: completion, onFailure: failure)
         } else {
