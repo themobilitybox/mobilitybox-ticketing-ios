@@ -114,10 +114,16 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
             
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
-                print("Error with the activating coupon response, unexpected status code: \(String(describing: response))")
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("Error with the activating coupon response, unexpected status code: \(httpResponse.statusCode)")
+                } else {
+                    print("Error with the activating coupon response, unexpected status code: \(String(describing: response))")
+                }
+                
                 
                 if let data = data {
                     let errorResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    print("Error Response: \(String(describing: errorResponse))")
                     
                     if errorResponse != nil && errorResponse!["message"] != nil && errorResponse!["message"] as! String == "The current subscription cycle was not ordered yet" {
                         DispatchQueue.main.async {
