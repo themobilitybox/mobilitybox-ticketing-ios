@@ -25,7 +25,7 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
     public var sold_at: String
     public var environment: String
     public var createdAt: Date? = Date()
-    var wasReactivated: Bool? = false
+    public var wasReactivated: Bool? = false
     
     public func getTitle() -> String {
         return product.local_ticket_name
@@ -62,7 +62,6 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         }
     }
     
-    public func reactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
     public func getPassengerName() -> String? {
         let identificationMediumJson = self.ticket.properties?.dictionary?["identification_medium"]?.dictionary
         let photoIdKeys = ["photo_id", "photo_id_lite", "photo_id_name_only"]
@@ -83,8 +82,10 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
             return nil
         }
     }
+    
+    public func reactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, checkIfCouponIsReactivatable: Bool? = true, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         if self.product.is_subscription && self.coupon_reactivation_key != nil && !self.wasReactivated! {
-            self.fetchCouponAndReactivate(identificationMedium: identificationMedium, tariffSettings: tariffSettings, onSuccess: completion, onFailure: failure)
+            self.fetchCouponAndReactivate(identificationMedium: identificationMedium, tariffSettings: tariffSettings, checkIfCouponIsReactivatable: checkIfCouponIsReactivatable, onSuccess: completion, onFailure: failure)
         } else {
             DispatchQueue.main.async { failure?(.not_reactivatable) }
         }
@@ -144,9 +145,9 @@ public class MobilityboxTicket: Identifiable, Codable, Equatable {
         task.resume()
     }
     
-    func fetchCouponAndReactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
+    func fetchCouponAndReactivate(identificationMedium: MobilityboxIdentificationMedium? = nil, tariffSettings: MobilityboxTariffSettings? = nil, checkIfCouponIsReactivatable: Bool? = true, onSuccess completion: @escaping ((MobilityboxTicketCode) -> Void), onFailure failure: ((MobilityboxError?) -> Void)? = nil) {
         MobilityboxCouponCode(couponId: self.coupon_id).fetchCoupon { fetchedCoupon in
-            if (fetchedCoupon.subscription != nil && fetchedCoupon.subscription!.coupon_reactivatable) {
+            if let subscription = fetchedCoupon.subscription, checkIfCouponIsReactivatable == false || subscription.coupon_reactivatable {
                 self.reactivateFetchedCoupon(fetchedCoupon: fetchedCoupon, identificationMedium: identificationMedium, tariffSettings: tariffSettings, onSuccess: completion, onFailure: failure)
             } else {
                 DispatchQueue.main.async { failure?(.not_reactivatable) }
