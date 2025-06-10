@@ -273,6 +273,12 @@ public struct MobilityboxIdentificationView: View {
             } else {
                 "Das Ticket kann nicht mehr benutzt werden."
             }
+        case .coupon_activation_activatable_until_expired:
+            if self.coupon.activatable_until != nil {
+                "Ihr Ticket kann nicht mehr entwertet werden, da es am \(MobilityboxFormatter.shortDateAndTime.string(from: MobilityboxFormatter.isoDateTime.date(from: self.coupon.activatable_until!)!)) Uhr abgelaufen ist. Bitte wenden Sie sich unter Angabe dieses Codes: \(self.coupon.getReferenceTag() ?? "") an den Support."
+            } else {
+                "Das Ticket kann nicht mehr benutzt werden, da es abgelaufen ist. "
+            }
         default:
             "Die Aktivierung des Tickets konnte aufgrund eines Fehlers nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
         }

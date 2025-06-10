@@ -135,6 +135,10 @@ public class MobilityboxCoupon: Identifiable, Codable, Equatable {
                         DispatchQueue.main.async {
                             failure?(MobilityboxError.before_earliest_activation_start_datetime)
                         }
+                    } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("Ticket cannot be activated anymore. It must be activated within 3 days of order.") {
+                        DispatchQueue.main.async {
+                            failure?(MobilityboxError.coupon_activation_activatable_until_expired)
+                        }
                     } else if errorResponse != nil && errorResponse!["message"] != nil && (errorResponse!["message"] as! String).hasPrefix("Ticket cannot be activated anymore") {
                         DispatchQueue.main.async {
                             failure?(MobilityboxError.coupon_activation_expired)

@@ -45,7 +45,7 @@ public class MobilityboxAPI: Codable {
 }
 
 public enum MobilityboxError: Error {
-    case unkown, retry_later, not_reactivatable, identification_medium_not_valid, tariff_settings_not_valid, coupon_expired, pkpass_not_possible, pkpass_not_available, before_earliest_activation_start_datetime, coupon_activation_expired
+    case unkown, retry_later, not_reactivatable, identification_medium_not_valid, tariff_settings_not_valid, coupon_expired, pkpass_not_possible, pkpass_not_available, before_earliest_activation_start_datetime, coupon_activation_expired, coupon_activation_activatable_until_expired
 }
 
 
